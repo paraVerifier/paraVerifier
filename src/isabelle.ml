@@ -265,7 +265,7 @@ let rules_act rs =
   let rule_inst_strs, rules_strs = List.unzip (List.map rs ~f:rule_act) in
   let rstrs = String.concat ~sep:"\n\n" rules_strs in
   let r_insts_str = String.concat ~sep:" \\<or>\n" rule_inst_strs in
-  sprintf "%s\n\ndefinition rules::\"nat \\<Rightarrow> rule set\" where [simp]:
+  sprintf "%s\n\nsubsection{*The set of All actual Rules w.r.t. a Protocol Instance with Size $N$*}\ndefinition rules::\"nat \\<Rightarrow> rule set\" where [simp]:
 \"rules N \\<equiv> {r.\n%s\n}\"" rstrs r_insts_str
 
 let rec paramecium_exp_to_loach e =
@@ -321,7 +321,7 @@ let invs_act cinvs =
         sprintf "(\\<exists> %s. %s)" (get_pd_name_list pds) (analyze_rels_in_pds "f" name pds)
     )
   ) in
-  sprintf "%s\n\ndefinition invariants::\"nat \\<Rightarrow> formula set\" where [simp]:
+  sprintf "%s\n\nsubsection{*Definitions of  the Set of Invariant Formula Instances in a $N$-protocol Instance*}\ndefinition invariants::\"nat \\<Rightarrow> formula set\" where [simp]:
 \"invariants N \\<equiv> {f.\n%s\n}\"" inv_strs inv_insts_str
 
 
@@ -438,14 +438,14 @@ let gen_case_1 indent cut_tacs =
   sprintf
 "  %shave \"?P1 s\"
   %sproof(cut_tac a1 a2 %s, auto) qed
-  %sthen %s \"invHoldForRule' s f r (invariants N)\" by auto" indent indent cut_tacs indent cmd
+  %sthen %s \"invHoldForRule s f r (invariants N)\" by auto" indent indent cut_tacs indent cmd
 
 let gen_case_2 indent cut_tacs =
   let cmd = if cut_tacs = "" then "show" else "have" in
   sprintf
 "  %shave \"?P2 s\"
   %sproof(cut_tac a1 a2 %s, auto) qed
-  %sthen %s \"invHoldForRule' s f r (invariants N)\" by auto" indent indent cut_tacs indent cmd
+  %sthen %s \"invHoldForRule s f r (invariants N)\" by auto" indent indent cut_tacs indent cmd
 
 let gen_case_3 indent cut_tacs (ConcreteProp(Prop(_, _, f), _)) =
   let cmd = if cut_tacs = "" then "show" else "have" in
@@ -453,7 +453,7 @@ let gen_case_3 indent cut_tacs (ConcreteProp(Prop(_, _, f), _)) =
   sprintf
 "  %shave \"?P3 s\"
   %sapply (cut_tac a1 a2 %s, simp, rule_tac x=\"%s\" in exI, auto) done
-  %sthen %s \"invHoldForRule' s f r (invariants N)\" by auto"
+  %sthen %s \"invHoldForRule s f r (invariants N)\" by auto"
     indent indent cut_tacs (formula_act (neg f)) indent cmd
 
 let gen_branch branch case =
@@ -499,13 +499,13 @@ let gen_inst relations condition has_outer_moreover =
   assume b1: \"%s\"
   have \"%s\" by auto
 %s
-  ultimately have \"invHoldForRule' s f r (invariants N)\" by satx
+  ultimately have \"invHoldForRule s f r (invariants N)\" by satx
 }" condition (String.concat ~sep:"\\<or>" branches) (String.concat ~sep:"\n" moreovers)
     else begin
       sprintf
 "have \"%s\" by auto
 %s
-ultimately show \"invHoldForRule' s f r (invariants N)\" by satx"
+ultimately show \"invHoldForRule s f r (invariants N)\" by satx"
         (String.concat ~sep:"\\<or>" branches) (String.concat ~sep:"\n" moreovers)
     end
   else begin
@@ -566,7 +566,7 @@ let gen_lemma relations rules =
         sprintf
 "have \"%s\" apply (cut_tac a1 a2, auto) done
 %s
-ultimately show \"invHoldForRule' s f r (invariants N)\" by satx"
+ultimately show \"invHoldForRule s f r (invariants N)\" by satx"
           (String.concat ~sep:"\\<or>" conditions)
           (String.concat ~sep:"\n" moreovers)
     in
@@ -574,7 +574,7 @@ ultimately show \"invHoldForRule' s f r (invariants N)\" by satx"
 "lemma %sVs%s:
 assumes a1: \"%s\" and
 a2: \"%s\"
-shows \"invHoldForRule' s f r (invariants N)\" (is \"?P1 s \\<or> ?P2 s \\<or> ?P3 s\")
+shows \"invHoldForRule s f r (invariants N)\" (is \"?P1 s \\<or> ?P2 s \\<or> ?P3 s\")
 proof -
 %s%s%s
 qed"
@@ -610,7 +610,7 @@ qed"
   "lemma %sVs%s:
   assumes a1: \"%s\" and
   a2: \"%s\"
-  shows \"invHoldForRule' s f r (invariants N)\"
+  shows \"invHoldForRule s f r (invariants N)\"
   apply (rule noEffectOnRule, cut_tac a1 a2, auto) done
   "
       rn pn
@@ -654,7 +654,7 @@ let gen_lemma_inv_on_rules (Paramecium.Prop(pn, p_pds, _)) rules =
     sprintf
 "    moreover {
       assume d1: \"%s\"
-      have \"invHoldForRule' s f r (invariants N)\"
+      have \"invHoldForRule s f r (invariants N)\"
       apply (cut_tac b2 d1, metis %sVs%s) done
     }
 " rule_constraint rn pn
@@ -663,12 +663,12 @@ let gen_lemma_inv_on_rules (Paramecium.Prop(pn, p_pds, _)) rules =
   sprintf
 "lemma lemma_%s_on_rules:
   assumes b1: \"r \\<in> rules N\" and b2: \"%s\"
-  shows \"invHoldForRule' s f r (invariants N)\"
+  shows \"invHoldForRule s f r (invariants N)\"
   proof -
   have c1: \"%s\"
   apply (cut_tac b1, auto) done
 %s
-  ultimately show \"invHoldForRule' s f r (invariants N)\"
+  ultimately show \"invHoldForRule s f r (invariants N)\"
   by satx
 qed
 "
@@ -691,7 +691,7 @@ let gen_lemma_invs_on_rules invs =
     sprintf
 "    moreover {
       assume c1: \"%s\"
-      have \"invHoldForRule' s f r (invariants N)\"
+      have \"invHoldForRule s f r (invariants N)\"
       apply (cut_tac a2 c1, metis lemma_%s_on_rules) done
     }
 " prop_constraint pn
@@ -700,12 +700,12 @@ let gen_lemma_invs_on_rules invs =
   sprintf
 "lemma invs_on_rules:
   assumes a1: \"f \\<in> invariants N\" and a2: \"r \\<in> rules N\"
-  shows \"invHoldForRule' s f r (invariants N)\"
+  shows \"invHoldForRule s f r (invariants N)\"
   proof -
   have b1: \"%s\"
   apply (cut_tac a1, auto) done
 %s
-  ultimately show \"invHoldForRule' s f r (invariants N)\"
+  ultimately show \"invHoldForRule s f r (invariants N)\"
   by satx
 qed
 "
@@ -763,9 +763,9 @@ let gen_main =
 assumes a1: \"s \\<in> reachableSet {andList (allInitSpecs N)} (rules N)\"
 and a2: \"0 < N\"
 shows \"\\<forall> f. f \\<in> (invariants N) --> formEval f s\"
-proof (rule newconsistentLemma)
-show \"newconsistent (invariants N) {andList (allInitSpecs N)} (rules N)\"
-proof (cut_tac a1, unfold newconsistent_def, rule conjI)
+proof (rule consistentLemma)
+show \"consistent (invariants N) {andList (allInitSpecs N)} (rules N)\"
+proof (cut_tac a1, unfold consistent_def, rule conjI)
 show \"\\<forall> f ini s. f \\<in> (invariants N) --> ini \\<in> {andList (allInitSpecs N)} \
 --> formEval ini s --> formEval f s\"
 proof ((rule allI)+, (rule impI)+)
@@ -779,11 +779,11 @@ and b3: \"formEval ini s\"
 cut_tac b3, assumption) done
 qed
 next show \"\\<forall> f r s. f \\<in> invariants N --> r \\<in> rules N --> \
-invHoldForRule' s f r (invariants N)\"
+invHoldForRule s f r (invariants N)\"
 proof ((rule allI)+, (rule impI)+)
   fix f r s
   assume b1: \"f \\<in> invariants N\" and b2: \"r \\<in> rules N\"
-  show \"invHoldForRule' s f r (invariants N)\"
+  show \"invHoldForRule s f r (invariants N)\"
   apply (rule invs_on_rules, cut_tac b1, assumption, cut_tac b2, assumption) done
 qed
 qed
@@ -803,10 +803,25 @@ let file_pub name types_str rules_str invs_str inits_str () =
   let pub_str = sprintf
 "theory %s_base imports paraTheory
 begin
+
 section{*Main definitions*}
+
+subsection{* Definitions of Constants*}
 %s\n
+
+
+subsection{*  Definitions of Parameterized Rules *}
+
 %s\n
+
+
+subsection{*Definitions of a Formally Parameterized Invariant Formulas*}
+
 %s\n
+
+
+subsection{*Definitions of initial states*}
+
 %s\n
 end
 " name types_str rules_str invs_str inits_str in
@@ -824,9 +839,10 @@ let file_inv name relations rules () =
       let lemmas_str = sprintf
 "theory lemma_on_%s imports %s_base
 begin
+section{*All lemmas on causal relation between %s and some rule r*}
 %s
 end
-" inv_name name strs in
+" inv_name name inv_name strs in
       Out_channel.write_all (sprintf "%s/lemma_on_%s.thy" name inv_name) lemmas_str;
       wrapper relations'
   in
@@ -841,9 +857,10 @@ let file_inv_on_rules name invs rules () =
       let lemma_str = sprintf
 "theory lemma_%s_on_rules imports lemma_on_%s
 begin
+section{*All lemmas on causal relation between %s*}
 %s
 end
-"  pn pn (gen_lemma_inv_on_rules inv rules) in
+"  pn pn pn (gen_lemma_inv_on_rules inv rules) in
       Out_channel.write_all (sprintf "%s/lemma_%s_on_rules.thy" name pn) lemma_str;
       wrapper invs'
   in
