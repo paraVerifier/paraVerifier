@@ -1,0 +1,184 @@
+MODULE main
+VAR
+n[1] : {i, t, c, e};
+n[2] : {i, t, c, e};
+n[3] : {i, t, c, e};
+x : boolean;
+
+--------------------
+
+n_Try__1 : process Proc__n_Try__1(n[1]);
+
+n_Try__2 : process Proc__n_Try__2(n[2]);
+
+n_Try__3 : process Proc__n_Try__3(n[3]);
+
+n_Crit__1 : process Proc__n_Crit__1(n[1], x);
+
+n_Crit__2 : process Proc__n_Crit__2(n[2], x);
+
+n_Crit__3 : process Proc__n_Crit__3(n[3], x);
+
+n_Exit__1 : process Proc__n_Exit__1(n[1]);
+
+n_Exit__2 : process Proc__n_Exit__2(n[2]);
+
+n_Exit__3 : process Proc__n_Exit__3(n[3]);
+
+n_Idle__1 : process Proc__n_Idle__1(n[1], x);
+
+n_Idle__2 : process Proc__n_Idle__2(n[2], x);
+
+n_Idle__3 : process Proc__n_Idle__3(n[3], x);
+
+--------------------
+
+ASSIGN
+init(n[1]) := case
+TRUE : i;
+esac;
+init(n[2]) := case
+TRUE : i;
+esac;
+init(n[3]) := case
+TRUE : i;
+esac;
+init(x) := case
+TRUE : TRUE;
+esac;
+
+--------------------
+
+
+
+--------------------
+
+MODULE Proc__n_Try__1(n__1)
+ASSIGN
+next(n__1) := case
+(n__1 = i) : t;
+TRUE : n__1;
+esac;
+
+---------
+
+MODULE Proc__n_Try__2(n__2)
+ASSIGN
+next(n__2) := case
+(n__2 = i) : t;
+TRUE : n__2;
+esac;
+
+---------
+
+MODULE Proc__n_Try__3(n__3)
+ASSIGN
+next(n__3) := case
+(n__3 = i) : t;
+TRUE : n__3;
+esac;
+
+---------
+
+MODULE Proc__n_Crit__1(n__1, x)
+ASSIGN
+next(n__1) := case
+((n__1 = t) & (x = TRUE)) : c;
+TRUE : n__1;
+esac;
+next(x) := case
+((n__1 = t) & (x = TRUE)) : FALSE;
+TRUE : x;
+esac;
+
+---------
+
+MODULE Proc__n_Crit__2(n__2, x)
+ASSIGN
+next(n__2) := case
+((n__2 = t) & (x = TRUE)) : c;
+TRUE : n__2;
+esac;
+next(x) := case
+((n__2 = t) & (x = TRUE)) : FALSE;
+TRUE : x;
+esac;
+
+---------
+
+MODULE Proc__n_Crit__3(n__3, x)
+ASSIGN
+next(n__3) := case
+((n__3 = t) & (x = TRUE)) : c;
+TRUE : n__3;
+esac;
+next(x) := case
+((n__3 = t) & (x = TRUE)) : FALSE;
+TRUE : x;
+esac;
+
+---------
+
+MODULE Proc__n_Exit__1(n__1)
+ASSIGN
+next(n__1) := case
+(n__1 = c) : e;
+TRUE : n__1;
+esac;
+
+---------
+
+MODULE Proc__n_Exit__2(n__2)
+ASSIGN
+next(n__2) := case
+(n__2 = c) : e;
+TRUE : n__2;
+esac;
+
+---------
+
+MODULE Proc__n_Exit__3(n__3)
+ASSIGN
+next(n__3) := case
+(n__3 = c) : e;
+TRUE : n__3;
+esac;
+
+---------
+
+MODULE Proc__n_Idle__1(n__1, x)
+ASSIGN
+next(n__1) := case
+(n__1 = e) : i;
+TRUE : n__1;
+esac;
+next(x) := case
+(n__1 = e) : TRUE;
+TRUE : x;
+esac;
+
+---------
+
+MODULE Proc__n_Idle__2(n__2, x)
+ASSIGN
+next(n__2) := case
+(n__2 = e) : i;
+TRUE : n__2;
+esac;
+next(x) := case
+(n__2 = e) : TRUE;
+TRUE : x;
+esac;
+
+---------
+
+MODULE Proc__n_Idle__3(n__3, x)
+ASSIGN
+next(n__3) := case
+(n__3 = e) : i;
+TRUE : n__3;
+esac;
+next(x) := case
+(n__3 = e) : TRUE;
+TRUE : x;
+esac;
