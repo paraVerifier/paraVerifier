@@ -801,7 +801,14 @@ qed"
 
 let file_pub name types_str rules_str invs_str inits_str () =
   let pub_str = sprintf
-"theory %s_base imports paraTheory
+"(*  Title:      HOL/Auth/%s.thy
+    Author:     Yongjian Li and Kaiqiang Duan, State Key Lab of Computer Science, Institute of Software, Chinese Academy of Sciences
+    Copyright    2016 State Key Lab of Computer Science, Institute of Software, Chinese Academy of Sciences
+*)
+
+header{*The %s Protocol Case Study*} 
+
+theory %s_base imports paraTheory
 begin
 
 section{*Main definitions*}
@@ -824,7 +831,7 @@ subsection{*Definitions of initial states*}
 
 %s\n
 end
-" name types_str rules_str invs_str inits_str in
+" (sprintf "%s_base" name) name name types_str rules_str invs_str inits_str in
   Out_channel.write_all (sprintf "%s/%s_base.thy" name name) pub_str;;
 
 let file_inv name relations rules () =
@@ -837,13 +844,20 @@ let file_inv name relations rules () =
         String.concat ~sep:"\n\n" (List.map rel ~f:(fun rs -> gen_lemma rs rules))
       in
       let lemmas_str = sprintf
-"theory lemma_on_%s imports %s_base
+"(*  Title:      HOL/Auth/%s.thy
+    Author:     Yongjian Li and Kaiqiang Duan, State Key Lab of Computer Science, Institute of Software, Chinese Academy of Sciences
+    Copyright    2016 State Key Lab of Computer Science, Institute of Software, Chinese Academy of Sciences
+*)
+
+header{*The %s Protocol Case Study*} 
+
+theory %s_lemma_on_%s imports %s_base
 begin
 section{*All lemmas on causal relation between %s and some rule r*}
 %s
 end
-" inv_name name inv_name strs in
-      Out_channel.write_all (sprintf "%s/lemma_on_%s.thy" name inv_name) lemmas_str;
+" (sprintf "%s_lemma_on_%s" name inv_name) name name inv_name name inv_name strs in
+      Out_channel.write_all (sprintf "%s/%s_lemma_on_%s.thy" name name inv_name) lemmas_str;
       wrapper relations'
   in
   wrapper relations;;
@@ -855,54 +869,90 @@ let file_inv_on_rules name invs rules () =
     | inv::invs' ->
       let Paramecium.Prop(pn, _, _) = inv in
       let lemma_str = sprintf
-"theory lemma_%s_on_rules imports lemma_on_%s
+"(*  Title:      HOL/Auth/%s.thy
+    Author:     Yongjian Li and Kaiqiang Duan, State Key Lab of Computer Science, Institute of Software, Chinese Academy of Sciences
+    Copyright    2016 State Key Lab of Computer Science, Institute of Software, Chinese Academy of Sciences
+*)
+
+header{*The %s Protocol Case Study*} 
+
+theory %s_lemma_%s_on_rules imports %s_lemma_on_%s
 begin
 section{*All lemmas on causal relation between %s*}
 %s
 end
-"  pn pn pn (gen_lemma_inv_on_rules inv rules) in
-      Out_channel.write_all (sprintf "%s/lemma_%s_on_rules.thy" name pn) lemma_str;
+" (sprintf "%s_lemma_%s_on_rules" name pn) name name pn name pn pn (gen_lemma_inv_on_rules inv rules) in
+      Out_channel.write_all (sprintf "%s/%s_lemma_%s_on_rules.thy" name name pn) lemma_str;
       wrapper invs'
   in
   wrapper invs;;
 
 let file_invs_on_rules name invs () =
   let imports = List.map invs ~f:(fun (Paramecium.Prop(pn, _, _)) ->
-    sprintf "lemma_%s_on_rules" pn
+    sprintf "%s_lemma_%s_on_rules" name pn
   ) in
   let lemma_str = sprintf
-"theory lemma_invs_on_rules imports %s
+"(*  Title:      HOL/Auth/%s.thy
+    Author:     Yongjian Li and Kaiqiang Duan, State Key Lab of Computer Science, Institute of Software, Chinese Academy of Sciences
+    Copyright    2016 State Key Lab of Computer Science, Institute of Software, Chinese Academy of Sciences
+*)
+
+header{*The %s Protocol Case Study*} 
+
+theory %s_lemma_invs_on_rules imports %s
 begin
 %s
 end
-" (String.concat ~sep:" " imports) (gen_lemma_invs_on_rules invs) in
-  Out_channel.write_all (sprintf "%s/lemma_invs_on_rules.thy" name) lemma_str;;
+" (sprintf "%s_lemma_invs_on_rules" name) name name
+  (String.concat ~sep:" " imports) (gen_lemma_invs_on_rules invs) in
+  Out_channel.write_all (sprintf "%s/%s_lemma_invs_on_rules.thy" name name) lemma_str;;
 
 let file_init name invs () =
   let init_str = sprintf
-"theory on_ini imports %s_base
+"(*  Title:      HOL/Auth/%s.thy
+    Author:     Yongjian Li and Kaiqiang Duan, State Key Lab of Computer Science, Institute of Software, Chinese Academy of Sciences
+    Copyright    2016 State Key Lab of Computer Science, Institute of Software, Chinese Academy of Sciences
+*)
+
+header{*The %s Protocol Case Study*} 
+
+theory %s_on_ini imports %s_base
 begin
 %s
 end
-" name (gen_lemma_invs_on_ini invs) in
-  Out_channel.write_all (sprintf "%s/on_ini.thy" name) init_str;;
+" (sprintf "%s_on_ini" name) name name name (gen_lemma_invs_on_ini invs) in
+  Out_channel.write_all (sprintf "%s/%s_on_ini.thy" name name) init_str;;
 
 let file_invs_on_inis name invs () =
   let lemma_str = sprintf
-"theory on_inis imports on_ini
+"(*  Title:      HOL/Auth/%s.thy
+    Author:     Yongjian Li and Kaiqiang Duan, State Key Lab of Computer Science, Institute of Software, Chinese Academy of Sciences
+    Copyright    2016 State Key Lab of Computer Science, Institute of Software, Chinese Academy of Sciences
+*)
+
+header{*The %s Protocol Case Study*} 
+
+theory %s_on_inis imports %s_on_ini
 begin
 %s
 end
-" (gen_lemma_invs_on_inis invs) in
-  Out_channel.write_all (sprintf "%s/on_inis.thy" name) lemma_str;;
+" (sprintf "%s_on_inis" name) name name name (gen_lemma_invs_on_inis invs) in
+  Out_channel.write_all (sprintf "%s/%s_on_inis.thy" name name) lemma_str;;
 
 let file_main name () =
   let main_str = sprintf
-"theory %s imports lemma_invs_on_rules on_inis
+"(*  Title:      HOL/Auth/%s.thy
+    Author:     Yongjian Li and Kaiqiang Duan, State Key Lab of Computer Science, Institute of Software, Chinese Academy of Sciences
+    Copyright    2016 State Key Lab of Computer Science, Institute of Software, Chinese Academy of Sciences
+*)
+
+header{*The %s Protocol Case Study*} 
+
+theory %s imports %s_lemma_invs_on_rules %s_on_inis
 begin
 %s
 end
-" name (gen_main) in
+" name name name name name (gen_main) in
   Out_channel.write_all (sprintf "%s/%s.thy" name name) main_str;;
 
 let file_root name n () =
@@ -915,7 +965,7 @@ let file_root name n () =
   let ss_paraTheory = ss_str "paraTheory" "HOL" ["paraTheory"] in
   let base_name = sprintf "%s_base" name in
   let lemma_ss_name i = sprintf "%s_lemma_on_inv__%d" name i in
-  let lemma_on_rules_name i = sprintf "lemma_inv__%d_on_rules" i in
+  let lemma_on_rules_name i = sprintf "%s_lemma_inv__%d_on_rules" name i in
   let ss_base = ss_str base_name "paraTheory_Session" [base_name] in
   let ss_lemma1 =
     ss_str (lemma_ss_name 1) (base_name^"_Session") [lemma_on_rules_name 1]
@@ -928,11 +978,11 @@ let file_root name n () =
   in
   let lemma_invs_on_rules_name = sprintf "%s_lemma_invs_on_rules" name in 
   let ss_invs_on_rules =
-    ss_str lemma_invs_on_rules_name (lemma_ss_name n^"_Session") ["lemma_invs_on_rules"]
+    ss_str lemma_invs_on_rules_name (lemma_ss_name n^"_Session") [sprintf "%s_lemma_invs_on_rules" name]
   in
   let invs_on_inis_name = sprintf "%s_invs_on_inis" name in
   let ss_invs_on_inis =
-    ss_str invs_on_inis_name (lemma_invs_on_rules_name^"_Session") ["on_inis"]
+    ss_str invs_on_inis_name (lemma_invs_on_rules_name^"_Session") [sprintf "%s_on_inis" name]
   in
   let ss_main = ss_str name (invs_on_inis_name^"_Session") [name] in
   let root_str =
