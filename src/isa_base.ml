@@ -675,6 +675,11 @@ subsection{*more lemmas on valOf operator*}
 
 text{*more lemmas on valOf operator*}
 
+lemma valOfLemma[simp]: \"i \\<le> N \\<longrightarrow> (valOf (map (\\<lambda>i. (Para v i, e i)) (down N)) (Para v i))=e i\"
+  apply(induct_tac N)
+  apply simp
+  apply auto
+done   
 
 lemma valOfLemma2Aux[simp]: \"(var' \\<notin> set (map fst xs)) \\<longrightarrow> (valOf xs (var'))=IVar var'\"
   apply(induct_tac xs)
