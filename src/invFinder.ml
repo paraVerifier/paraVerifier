@@ -77,6 +77,7 @@ with sexp
 
 let type_defs = ref []
 let protocol_name = ref ""
+let raw_rule_table = Hashtbl.create ~hashable:String.hashable ()
 let rule_table = Hashtbl.create ~hashable:String.hashable ()
 let rule_vars_table = Hashtbl.create ~hashable:String.hashable ()
 
@@ -726,14 +727,29 @@ let tabular_expans (Rule(_name, _, form, _), crule, _, assigns) ~cinv =
   in
   deal_with_case obligations []
 
-
 let compute_rule_inst_names rname_paraminfo_pairs prop_pds =
   List.map rname_paraminfo_pairs ~f:(fun (rname, rpds) ->
     match rpds with
     | [] -> [rname]
     | _ ->
       SemiPerm.gen_paramfixes prop_pds rpds
-      |> List.map ~f:(fun pfs -> get_rule_inst_name rname pfs)
+      |> List.map ~f:(fun pfs ->
+        let inst_name = get_rule_inst_name rname pfs in
+        begin
+          match Hashtbl.find rule_table inst_name with
+          | None ->
+            let r = Hashtbl.find_exn raw_rule_table rname in
+            let ri = apply_rule r ~p:pfs in
+            let Rule(_, _, guard, statement) = ri in
+            let guards = flat_and_to_list guard in
+            let assigns = statement_2_assigns statement in
+            let data = (ri, concrete_rule ri pfs, guards, assigns) in
+            Hashtbl.replace rule_table ~key:inst_name ~data;
+            ()
+          | _ -> ()
+        end;
+        inst_name
+      )
   )
 
 let reorder_formList sour template =
@@ -1023,7 +1039,7 @@ let find ?(insym_types=[]) ?(smv_escape=(fun inv_str -> inv_str))
   let get_rulename_param_pair r =
     let Paramecium.Rule(rname, paramdefs, _, _) = r in
     let ps = cart_product_with_paramfix paramdefs (!type_defs) in
-    rule_2_concrete r ps;
+    Hashtbl.replace raw_rule_table ~key:rname ~data:r;
     (rname, paramdefs)
   in
   let rname_paraminfo_pairs = List.map rules ~f:get_rulename_param_pair in
