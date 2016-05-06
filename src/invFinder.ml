@@ -730,7 +730,20 @@ let tabular_expans (Rule(_name, _, form, _), crule, _, assigns) ~cinv =
 let compute_rule_inst_names rname_paraminfo_pairs prop_pds =
   List.map rname_paraminfo_pairs ~f:(fun (rname, rpds) ->
     match rpds with
-    | [] -> [rname]
+    | [] ->
+      begin
+        match Hashtbl.find rule_table rname with
+        | None ->
+          let ri = Hashtbl.find_exn raw_rule_table rname in
+          let Rule(_, _, guard, statement) = ri in
+          let guards = flat_and_to_list guard in
+          let assigns = statement_2_assigns statement in
+          let data = (ri, concrete_rule ri [], guards, assigns) in
+          Hashtbl.replace rule_table ~key:rname ~data;
+          ()
+        | _ -> ()
+      end;
+      [rname]
     | _ ->
       SemiPerm.gen_paramfixes prop_pds rpds
       |> List.map ~f:(fun pfs ->
