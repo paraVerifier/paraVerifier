@@ -1,7 +1,7 @@
 
-const num_nodes: 3;		
-const num_addr:  1;		
-const num_data:  1;		
+const num_nodes: 3;
+const num_addr:  1;
+const num_data:  1;
 
 
 type opcode: enum {

@@ -51,16 +51,21 @@ def gen_smv_file(name, content, name_add=""):
             f.write(content)
     return new_smv_file, smv_file
 
-def gen_smv_process(name, content, name_add=""):
+def gen_smv_process(name, content, ord_str, name_add=""):
     smv_file = SMV_FILE_DIR + hashlib.md5(content).hexdigest() + name_add + '.smv'
     if os.path.isfile(smv_file) and smv_file in smv_process_pool:
         smv_pool[name] = smv_file
     else:
         with open(smv_file, 'w') as f:
             f.write(content)
+        ord_file = None
+        if ord_str:
+            ord_file = SMV_FILE_DIR + hashlib.md5(content).hexdigest() + name_add + '.ord'
+            with open(ord_file, 'w') as f:
+                f.write(ord_str)
         smv_pool[name] = smv_file
         if __verbose: print "Start to compute reachable set"
-        smv = SMV(SMV_PATH, smv_file, timeout=TIME_OUT)
+        smv = SMV(SMV_PATH, smv_file, ord_file, timeout=TIME_OUT)
         smv_process_pool[smv_file] = smv
         smv.go_and_compute_reachable()
 
@@ -90,8 +95,9 @@ def serv(conn, addr):
         """
         # There are many ',' in smv file, so should concat the parts splited
         name = cmd[2]
-        content = ','.join(cmd[3:])
-        gen_smv_process(name, content)
+        content = ','.join(cmd[3:-1])
+        ord_str = cmd[-1]
+        gen_smv_process(name, content, ord_str)
         conn.sendall(OK)
     elif cmd[0] == QUERY_REACHABLE:
         """

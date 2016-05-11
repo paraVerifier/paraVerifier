@@ -7,7 +7,7 @@ module Smv : sig
   exception Cannot_check
   val host : UnixLabels.inet_addr ref
   val port : int ref
-  val compute_reachable : string -> string -> bool
+  val compute_reachable : ?smv_ord:string -> string -> string -> bool
   val query_reachable : string -> int
   val check_inv : string -> string -> bool
   val quit : string -> bool

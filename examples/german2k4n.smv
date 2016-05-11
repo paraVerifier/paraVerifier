@@ -1,0 +1,2352 @@
+MODULE cache_record
+VAR
+  state: {cache_invalid,cache_shared,cache_exclusive};
+  data:   boolean;
+
+MODULE message
+VAR
+  source: 0..3;
+  dest:   0..3;
+  op:     {op_invalid,read_shared,read_exclusive,req_upgrade,invalidate,invalidate_ack,grant_shared,grant_upgrade,grant_exclusive};
+  data:   boolean;  
+
+MODULE message_buf
+VAR
+  msg: message;  
+  valid: boolean;
+ASSIGN
+  
+  
+MODULE addr_request
+VAR
+  home:   0..3;
+  op:     {op_invalid,read_shared,read_exclusive,req_upgrade,invalidate,invalidate_ack,grant_shared,grant_upgrade,grant_exclusive};
+  data:   boolean;
+  status: {inactive,pending,completed};
+  
+MODULE home_request
+VAR
+  source: 0..3;
+  op:     {op_invalid,read_shared,read_exclusive,req_upgrade,invalidate,invalidate_ack,grant_shared,grant_upgrade,grant_exclusive};
+  data:   boolean;  
+  invalidate_list: array 0..3 of boolean;
+  status: {inactive,pending,completed};
+
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------
+
+MODULE main
+VAR
+
+  home_requests:   home_request;
+  directory:       array 0..3 of {cache_invalid,cache_shared,cache_exclusive};
+  memory:          boolean;
+  auxdata:         boolean;
+
+  Node[0] : process node(0,0);
+  Node[1] : process node(1,0);
+  Node[2] : process node(2,0);
+  Node[3] : process node(3,0);
+
+-----------------------------------------------------------------------------
+
+Chan1_0_0 : process channel_1(0, 0,
+Node[0].outchan1.valid,Node[0].outchan1.msg.source,Node[0].outchan1.msg.dest,Node[0].outchan1.msg.op,Node[0].outchan1.msg.data,
+Node[0].inchan1.valid,Node[0].inchan1.msg.source,Node[0].inchan1.msg.dest,Node[0].inchan1.msg.op,Node[0].inchan1.msg.data);
+
+Chan2_0_0 : process channel_2(0, 0,
+Node[0].outchan2.valid,Node[0].outchan2.msg.source,Node[0].outchan2.msg.dest,Node[0].outchan2.msg.op,Node[0].outchan2.msg.data,
+Node[0].inchan2.valid,Node[0].inchan2.msg.source,Node[0].inchan2.msg.dest,Node[0].inchan2.msg.op,Node[0].inchan2.msg.data);
+
+Chan3_0_0 : process channel_3(0, 0,
+Node[0].outchan3.valid,Node[0].outchan3.msg.source,Node[0].outchan3.msg.dest,Node[0].outchan3.msg.op,Node[0].outchan3.msg.data,
+Node[0].inchan3.valid,Node[0].inchan3.msg.source,Node[0].inchan3.msg.dest,Node[0].inchan3.msg.op,Node[0].inchan3.msg.data);
+
+Chan2_0_1 : process channel_2(0, 1,
+Node[0].outchan2.valid,Node[0].outchan2.msg.source,Node[0].outchan2.msg.dest,Node[0].outchan2.msg.op,Node[0].outchan2.msg.data,
+Node[1].inchan2.valid,Node[1].inchan2.msg.source,Node[1].inchan2.msg.dest,Node[1].inchan2.msg.op,Node[1].inchan2.msg.data);
+
+Chan2_0_2 : process channel_2(0, 2,
+Node[0].outchan2.valid,Node[0].outchan2.msg.source,Node[0].outchan2.msg.dest,Node[0].outchan2.msg.op,Node[0].outchan2.msg.data,
+Node[2].inchan2.valid,Node[2].inchan2.msg.source,Node[2].inchan2.msg.dest,Node[2].inchan2.msg.op,Node[2].inchan2.msg.data);
+
+Chan2_0_3 : process channel_2(0, 3,
+Node[0].outchan2.valid,Node[0].outchan2.msg.source,Node[0].outchan2.msg.dest,Node[0].outchan2.msg.op,Node[0].outchan2.msg.data,
+Node[3].inchan2.valid,Node[3].inchan2.msg.source,Node[3].inchan2.msg.dest,Node[3].inchan2.msg.op,Node[3].inchan2.msg.data);
+
+Chan1_1_0 : process channel_1(1, 0,
+Node[1].outchan1.valid,Node[1].outchan1.msg.source,Node[1].outchan1.msg.dest,Node[1].outchan1.msg.op,Node[1].outchan1.msg.data,
+Node[0].inchan1.valid,Node[0].inchan1.msg.source,Node[0].inchan1.msg.dest,Node[0].inchan1.msg.op,Node[0].inchan1.msg.data);
+
+Chan3_1_0 : process channel_3(1, 0,
+Node[1].outchan3.valid,Node[1].outchan3.msg.source,Node[1].outchan3.msg.dest,Node[1].outchan3.msg.op,Node[1].outchan3.msg.data,
+Node[0].inchan3.valid,Node[0].inchan3.msg.source,Node[0].inchan3.msg.dest,Node[0].inchan3.msg.op,Node[0].inchan3.msg.data);
+
+Chan1_2_0 : process channel_1(2, 0,
+Node[2].outchan1.valid,Node[2].outchan1.msg.source,Node[2].outchan1.msg.dest,Node[2].outchan1.msg.op,Node[2].outchan1.msg.data,
+Node[0].inchan1.valid,Node[0].inchan1.msg.source,Node[0].inchan1.msg.dest,Node[0].inchan1.msg.op,Node[0].inchan1.msg.data);
+
+Chan3_2_0 : process channel_3(2, 0,
+Node[2].outchan3.valid,Node[2].outchan3.msg.source,Node[2].outchan3.msg.dest,Node[2].outchan3.msg.op,Node[2].outchan3.msg.data,
+Node[0].inchan3.valid,Node[0].inchan3.msg.source,Node[0].inchan3.msg.dest,Node[0].inchan3.msg.op,Node[0].inchan3.msg.data);
+
+Chan1_3_0 : process channel_1(3, 0,
+Node[3].outchan1.valid,Node[3].outchan1.msg.source,Node[3].outchan1.msg.dest,Node[3].outchan1.msg.op,Node[3].outchan1.msg.data,
+Node[0].inchan1.valid,Node[0].inchan1.msg.source,Node[0].inchan1.msg.dest,Node[0].inchan1.msg.op,Node[0].inchan1.msg.data);
+
+Chan3_3_0 : process channel_3(3, 0,
+Node[3].outchan3.valid,Node[3].outchan3.msg.source,Node[3].outchan3.msg.dest,Node[3].outchan3.msg.op,Node[3].outchan3.msg.data,
+Node[0].inchan3.valid,Node[0].inchan3.msg.source,Node[0].inchan3.msg.dest,Node[0].inchan3.msg.op,Node[0].inchan3.msg.data);
+
+
+-----------------------------------------------------------------------------
+
+N0_S_Client_generates_new_req_for_addr: process Client_generates_new_req_for_addr(0, 0, read_shared, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[0], home_requests.invalidate_list[0]);  
+
+N0_E_Client_generates_new_req_for_addr: process Client_generates_new_req_for_addr(0, 0, read_exclusive, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[0], home_requests.invalidate_list[0]);  
+
+N0_U_Client_generates_new_req_for_addr: process Client_generates_new_req_for_addr(0, 0, req_upgrade, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[0], home_requests.invalidate_list[0]);  
+
+N1_S_Client_generates_new_req_for_addr: process Client_generates_new_req_for_addr(1, 0, read_shared, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[1].cache.state, Node[1].cache.data, Node[1].local_requests, Node[1].remote_requests.op, 
+Node[1].remote_requests.data, Node[1].remote_requests.status, Node[1].remote_requests.home, 
+Node[1].inchan1.valid, Node[1].inchan1.msg.source, Node[1].inchan1.msg.dest, Node[1].inchan1.msg.op, Node[1].inchan1.msg.data, 
+Node[1].inchan2.valid, Node[1].inchan2.msg.source, Node[1].inchan2.msg.dest, Node[1].inchan2.msg.op, Node[1].inchan2.msg.data, 
+Node[1].inchan3.valid, Node[1].inchan3.msg.source, Node[1].inchan3.msg.dest, Node[1].inchan3.msg.op, Node[1].inchan3.msg.data, 
+Node[1].outchan1.valid, Node[1].outchan1.msg.source, Node[1].outchan1.msg.dest, Node[1].outchan1.msg.op, Node[1].outchan1.msg.data, 
+Node[1].outchan2.valid, Node[1].outchan2.msg.source, Node[1].outchan2.msg.dest, Node[1].outchan2.msg.op, Node[1].outchan2.msg.data, 
+Node[1].outchan3.valid, Node[1].outchan3.msg.source, Node[1].outchan3.msg.dest, Node[1].outchan3.msg.op, Node[1].outchan3.msg.data, 
+directory[1], home_requests.invalidate_list[1]);  
+
+N1_E_Client_generates_new_req_for_addr: process Client_generates_new_req_for_addr(1, 0, read_exclusive, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[1].cache.state, Node[1].cache.data, Node[1].local_requests, Node[1].remote_requests.op, 
+Node[1].remote_requests.data, Node[1].remote_requests.status, Node[1].remote_requests.home, 
+Node[1].inchan1.valid, Node[1].inchan1.msg.source, Node[1].inchan1.msg.dest, Node[1].inchan1.msg.op, Node[1].inchan1.msg.data, 
+Node[1].inchan2.valid, Node[1].inchan2.msg.source, Node[1].inchan2.msg.dest, Node[1].inchan2.msg.op, Node[1].inchan2.msg.data, 
+Node[1].inchan3.valid, Node[1].inchan3.msg.source, Node[1].inchan3.msg.dest, Node[1].inchan3.msg.op, Node[1].inchan3.msg.data, 
+Node[1].outchan1.valid, Node[1].outchan1.msg.source, Node[1].outchan1.msg.dest, Node[1].outchan1.msg.op, Node[1].outchan1.msg.data, 
+Node[1].outchan2.valid, Node[1].outchan2.msg.source, Node[1].outchan2.msg.dest, Node[1].outchan2.msg.op, Node[1].outchan2.msg.data, 
+Node[1].outchan3.valid, Node[1].outchan3.msg.source, Node[1].outchan3.msg.dest, Node[1].outchan3.msg.op, Node[1].outchan3.msg.data, 
+directory[1], home_requests.invalidate_list[1]);  
+
+N1_U_Client_generates_new_req_for_addr: process Client_generates_new_req_for_addr(1, 0, req_upgrade, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[1].cache.state, Node[1].cache.data, Node[1].local_requests, Node[1].remote_requests.op, 
+Node[1].remote_requests.data, Node[1].remote_requests.status, Node[1].remote_requests.home, 
+Node[1].inchan1.valid, Node[1].inchan1.msg.source, Node[1].inchan1.msg.dest, Node[1].inchan1.msg.op, Node[1].inchan1.msg.data, 
+Node[1].inchan2.valid, Node[1].inchan2.msg.source, Node[1].inchan2.msg.dest, Node[1].inchan2.msg.op, Node[1].inchan2.msg.data, 
+Node[1].inchan3.valid, Node[1].inchan3.msg.source, Node[1].inchan3.msg.dest, Node[1].inchan3.msg.op, Node[1].inchan3.msg.data, 
+Node[1].outchan1.valid, Node[1].outchan1.msg.source, Node[1].outchan1.msg.dest, Node[1].outchan1.msg.op, Node[1].outchan1.msg.data, 
+Node[1].outchan2.valid, Node[1].outchan2.msg.source, Node[1].outchan2.msg.dest, Node[1].outchan2.msg.op, Node[1].outchan2.msg.data, 
+Node[1].outchan3.valid, Node[1].outchan3.msg.source, Node[1].outchan3.msg.dest, Node[1].outchan3.msg.op, Node[1].outchan3.msg.data, 
+directory[1], home_requests.invalidate_list[1]);  
+
+N2_S_Client_generates_new_req_for_addr: process Client_generates_new_req_for_addr(2, 0, read_shared, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[2].cache.state, Node[2].cache.data, Node[2].local_requests, Node[2].remote_requests.op, 
+Node[2].remote_requests.data, Node[2].remote_requests.status, Node[2].remote_requests.home, 
+Node[2].inchan1.valid, Node[2].inchan1.msg.source, Node[2].inchan1.msg.dest, Node[2].inchan1.msg.op, Node[2].inchan1.msg.data, 
+Node[2].inchan2.valid, Node[2].inchan2.msg.source, Node[2].inchan2.msg.dest, Node[2].inchan2.msg.op, Node[2].inchan2.msg.data, 
+Node[2].inchan3.valid, Node[2].inchan3.msg.source, Node[2].inchan3.msg.dest, Node[2].inchan3.msg.op, Node[2].inchan3.msg.data, 
+Node[2].outchan1.valid, Node[2].outchan1.msg.source, Node[2].outchan1.msg.dest, Node[2].outchan1.msg.op, Node[2].outchan1.msg.data, 
+Node[2].outchan2.valid, Node[2].outchan2.msg.source, Node[2].outchan2.msg.dest, Node[2].outchan2.msg.op, Node[2].outchan2.msg.data, 
+Node[2].outchan3.valid, Node[2].outchan3.msg.source, Node[2].outchan3.msg.dest, Node[2].outchan3.msg.op, Node[2].outchan3.msg.data, 
+directory[2], home_requests.invalidate_list[2]);  
+
+N2_E_Client_generates_new_req_for_addr: process Client_generates_new_req_for_addr(2, 0, read_exclusive, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[2].cache.state, Node[2].cache.data, Node[2].local_requests, Node[2].remote_requests.op, 
+Node[2].remote_requests.data, Node[2].remote_requests.status, Node[2].remote_requests.home, 
+Node[2].inchan1.valid, Node[2].inchan1.msg.source, Node[2].inchan1.msg.dest, Node[2].inchan1.msg.op, Node[2].inchan1.msg.data, 
+Node[2].inchan2.valid, Node[2].inchan2.msg.source, Node[2].inchan2.msg.dest, Node[2].inchan2.msg.op, Node[2].inchan2.msg.data, 
+Node[2].inchan3.valid, Node[2].inchan3.msg.source, Node[2].inchan3.msg.dest, Node[2].inchan3.msg.op, Node[2].inchan3.msg.data, 
+Node[2].outchan1.valid, Node[2].outchan1.msg.source, Node[2].outchan1.msg.dest, Node[2].outchan1.msg.op, Node[2].outchan1.msg.data, 
+Node[2].outchan2.valid, Node[2].outchan2.msg.source, Node[2].outchan2.msg.dest, Node[2].outchan2.msg.op, Node[2].outchan2.msg.data, 
+Node[2].outchan3.valid, Node[2].outchan3.msg.source, Node[2].outchan3.msg.dest, Node[2].outchan3.msg.op, Node[2].outchan3.msg.data, 
+directory[2], home_requests.invalidate_list[2]);  
+
+N2_U_Client_generates_new_req_for_addr: process Client_generates_new_req_for_addr(2, 0, req_upgrade, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[2].cache.state, Node[2].cache.data, Node[2].local_requests, Node[2].remote_requests.op, 
+Node[2].remote_requests.data, Node[2].remote_requests.status, Node[2].remote_requests.home, 
+Node[2].inchan1.valid, Node[2].inchan1.msg.source, Node[2].inchan1.msg.dest, Node[2].inchan1.msg.op, Node[2].inchan1.msg.data, 
+Node[2].inchan2.valid, Node[2].inchan2.msg.source, Node[2].inchan2.msg.dest, Node[2].inchan2.msg.op, Node[2].inchan2.msg.data, 
+Node[2].inchan3.valid, Node[2].inchan3.msg.source, Node[2].inchan3.msg.dest, Node[2].inchan3.msg.op, Node[2].inchan3.msg.data, 
+Node[2].outchan1.valid, Node[2].outchan1.msg.source, Node[2].outchan1.msg.dest, Node[2].outchan1.msg.op, Node[2].outchan1.msg.data, 
+Node[2].outchan2.valid, Node[2].outchan2.msg.source, Node[2].outchan2.msg.dest, Node[2].outchan2.msg.op, Node[2].outchan2.msg.data, 
+Node[2].outchan3.valid, Node[2].outchan3.msg.source, Node[2].outchan3.msg.dest, Node[2].outchan3.msg.op, Node[2].outchan3.msg.data, 
+directory[2], home_requests.invalidate_list[2]);  
+
+N3_S_Client_generates_new_req_for_addr: process Client_generates_new_req_for_addr(3, 0, read_shared, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[3].cache.state, Node[3].cache.data, Node[3].local_requests, Node[3].remote_requests.op, 
+Node[3].remote_requests.data, Node[3].remote_requests.status, Node[3].remote_requests.home, 
+Node[3].inchan1.valid, Node[3].inchan1.msg.source, Node[3].inchan1.msg.dest, Node[3].inchan1.msg.op, Node[3].inchan1.msg.data, 
+Node[3].inchan2.valid, Node[3].inchan2.msg.source, Node[3].inchan2.msg.dest, Node[3].inchan2.msg.op, Node[3].inchan2.msg.data, 
+Node[3].inchan3.valid, Node[3].inchan3.msg.source, Node[3].inchan3.msg.dest, Node[3].inchan3.msg.op, Node[3].inchan3.msg.data, 
+Node[3].outchan1.valid, Node[3].outchan1.msg.source, Node[3].outchan1.msg.dest, Node[3].outchan1.msg.op, Node[3].outchan1.msg.data, 
+Node[3].outchan2.valid, Node[3].outchan2.msg.source, Node[3].outchan2.msg.dest, Node[3].outchan2.msg.op, Node[3].outchan2.msg.data, 
+Node[3].outchan3.valid, Node[3].outchan3.msg.source, Node[3].outchan3.msg.dest, Node[3].outchan3.msg.op, Node[3].outchan3.msg.data, 
+directory[3], home_requests.invalidate_list[3]);  
+
+N3_E_Client_generates_new_req_for_addr: process Client_generates_new_req_for_addr(3, 0, read_exclusive, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[3].cache.state, Node[3].cache.data, Node[3].local_requests, Node[3].remote_requests.op, 
+Node[3].remote_requests.data, Node[3].remote_requests.status, Node[3].remote_requests.home, 
+Node[3].inchan1.valid, Node[3].inchan1.msg.source, Node[3].inchan1.msg.dest, Node[3].inchan1.msg.op, Node[3].inchan1.msg.data, 
+Node[3].inchan2.valid, Node[3].inchan2.msg.source, Node[3].inchan2.msg.dest, Node[3].inchan2.msg.op, Node[3].inchan2.msg.data, 
+Node[3].inchan3.valid, Node[3].inchan3.msg.source, Node[3].inchan3.msg.dest, Node[3].inchan3.msg.op, Node[3].inchan3.msg.data, 
+Node[3].outchan1.valid, Node[3].outchan1.msg.source, Node[3].outchan1.msg.dest, Node[3].outchan1.msg.op, Node[3].outchan1.msg.data, 
+Node[3].outchan2.valid, Node[3].outchan2.msg.source, Node[3].outchan2.msg.dest, Node[3].outchan2.msg.op, Node[3].outchan2.msg.data, 
+Node[3].outchan3.valid, Node[3].outchan3.msg.source, Node[3].outchan3.msg.dest, Node[3].outchan3.msg.op, Node[3].outchan3.msg.data, 
+directory[3], home_requests.invalidate_list[3]);  
+
+N3_U_Client_generates_new_req_for_addr: process Client_generates_new_req_for_addr(3, 0, req_upgrade, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[3].cache.state, Node[3].cache.data, Node[3].local_requests, Node[3].remote_requests.op, 
+Node[3].remote_requests.data, Node[3].remote_requests.status, Node[3].remote_requests.home, 
+Node[3].inchan1.valid, Node[3].inchan1.msg.source, Node[3].inchan1.msg.dest, Node[3].inchan1.msg.op, Node[3].inchan1.msg.data, 
+Node[3].inchan2.valid, Node[3].inchan2.msg.source, Node[3].inchan2.msg.dest, Node[3].inchan2.msg.op, Node[3].inchan2.msg.data, 
+Node[3].inchan3.valid, Node[3].inchan3.msg.source, Node[3].inchan3.msg.dest, Node[3].inchan3.msg.op, Node[3].inchan3.msg.data, 
+Node[3].outchan1.valid, Node[3].outchan1.msg.source, Node[3].outchan1.msg.dest, Node[3].outchan1.msg.op, Node[3].outchan1.msg.data, 
+Node[3].outchan2.valid, Node[3].outchan2.msg.source, Node[3].outchan2.msg.dest, Node[3].outchan2.msg.op, Node[3].outchan2.msg.data, 
+Node[3].outchan3.valid, Node[3].outchan3.msg.source, Node[3].outchan3.msg.dest, Node[3].outchan3.msg.op, Node[3].outchan3.msg.data, 
+directory[3], home_requests.invalidate_list[3]);  
+
+
+-----------------------------------------------------------------------------
+N0_Client_accepts_invalidate_request: process Client_accepts_invalidate_request(0, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[0], home_requests.invalidate_list[0]);  
+
+N1_Client_accepts_invalidate_request: process Client_accepts_invalidate_request(1, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[1].cache.state, Node[1].cache.data, Node[1].local_requests, Node[1].remote_requests.op, 
+Node[1].remote_requests.data, Node[1].remote_requests.status, Node[1].remote_requests.home, 
+Node[1].inchan1.valid, Node[1].inchan1.msg.source, Node[1].inchan1.msg.dest, Node[1].inchan1.msg.op, Node[1].inchan1.msg.data, 
+Node[1].inchan2.valid, Node[1].inchan2.msg.source, Node[1].inchan2.msg.dest, Node[1].inchan2.msg.op, Node[1].inchan2.msg.data, 
+Node[1].inchan3.valid, Node[1].inchan3.msg.source, Node[1].inchan3.msg.dest, Node[1].inchan3.msg.op, Node[1].inchan3.msg.data, 
+Node[1].outchan1.valid, Node[1].outchan1.msg.source, Node[1].outchan1.msg.dest, Node[1].outchan1.msg.op, Node[1].outchan1.msg.data, 
+Node[1].outchan2.valid, Node[1].outchan2.msg.source, Node[1].outchan2.msg.dest, Node[1].outchan2.msg.op, Node[1].outchan2.msg.data, 
+Node[1].outchan3.valid, Node[1].outchan3.msg.source, Node[1].outchan3.msg.dest, Node[1].outchan3.msg.op, Node[1].outchan3.msg.data, 
+directory[1], home_requests.invalidate_list[1]);  
+
+N2_Client_accepts_invalidate_request: process Client_accepts_invalidate_request(2, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[2].cache.state, Node[2].cache.data, Node[2].local_requests, Node[2].remote_requests.op, 
+Node[2].remote_requests.data, Node[2].remote_requests.status, Node[2].remote_requests.home, 
+Node[2].inchan1.valid, Node[2].inchan1.msg.source, Node[2].inchan1.msg.dest, Node[2].inchan1.msg.op, Node[2].inchan1.msg.data, 
+Node[2].inchan2.valid, Node[2].inchan2.msg.source, Node[2].inchan2.msg.dest, Node[2].inchan2.msg.op, Node[2].inchan2.msg.data, 
+Node[2].inchan3.valid, Node[2].inchan3.msg.source, Node[2].inchan3.msg.dest, Node[2].inchan3.msg.op, Node[2].inchan3.msg.data, 
+Node[2].outchan1.valid, Node[2].outchan1.msg.source, Node[2].outchan1.msg.dest, Node[2].outchan1.msg.op, Node[2].outchan1.msg.data, 
+Node[2].outchan2.valid, Node[2].outchan2.msg.source, Node[2].outchan2.msg.dest, Node[2].outchan2.msg.op, Node[2].outchan2.msg.data, 
+Node[2].outchan3.valid, Node[2].outchan3.msg.source, Node[2].outchan3.msg.dest, Node[2].outchan3.msg.op, Node[2].outchan3.msg.data, 
+directory[2], home_requests.invalidate_list[2]);  
+
+N3_Client_accepts_invalidate_request: process Client_accepts_invalidate_request(3, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[3].cache.state, Node[3].cache.data, Node[3].local_requests, Node[3].remote_requests.op, 
+Node[3].remote_requests.data, Node[3].remote_requests.status, Node[3].remote_requests.home, 
+Node[3].inchan1.valid, Node[3].inchan1.msg.source, Node[3].inchan1.msg.dest, Node[3].inchan1.msg.op, Node[3].inchan1.msg.data, 
+Node[3].inchan2.valid, Node[3].inchan2.msg.source, Node[3].inchan2.msg.dest, Node[3].inchan2.msg.op, Node[3].inchan2.msg.data, 
+Node[3].inchan3.valid, Node[3].inchan3.msg.source, Node[3].inchan3.msg.dest, Node[3].inchan3.msg.op, Node[3].inchan3.msg.data, 
+Node[3].outchan1.valid, Node[3].outchan1.msg.source, Node[3].outchan1.msg.dest, Node[3].outchan1.msg.op, Node[3].outchan1.msg.data, 
+Node[3].outchan2.valid, Node[3].outchan2.msg.source, Node[3].outchan2.msg.dest, Node[3].outchan2.msg.op, Node[3].outchan2.msg.data, 
+Node[3].outchan3.valid, Node[3].outchan3.msg.source, Node[3].outchan3.msg.dest, Node[3].outchan3.msg.op, Node[3].outchan3.msg.data, 
+directory[3], home_requests.invalidate_list[3]);  
+-----------------------------------------------------------------------------
+
+N0_Client_processes_invalidate_request_for_addr: process Client_processes_invalidate_request_for_addr(0, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[0], home_requests.invalidate_list[0]);  
+
+N1_Client_processes_invalidate_request_for_addr: process Client_processes_invalidate_request_for_addr(1, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[1].cache.state, Node[1].cache.data, Node[1].local_requests, Node[1].remote_requests.op, 
+Node[1].remote_requests.data, Node[1].remote_requests.status, Node[1].remote_requests.home, 
+Node[1].inchan1.valid, Node[1].inchan1.msg.source, Node[1].inchan1.msg.dest, Node[1].inchan1.msg.op, Node[1].inchan1.msg.data, 
+Node[1].inchan2.valid, Node[1].inchan2.msg.source, Node[1].inchan2.msg.dest, Node[1].inchan2.msg.op, Node[1].inchan2.msg.data, 
+Node[1].inchan3.valid, Node[1].inchan3.msg.source, Node[1].inchan3.msg.dest, Node[1].inchan3.msg.op, Node[1].inchan3.msg.data, 
+Node[1].outchan1.valid, Node[1].outchan1.msg.source, Node[1].outchan1.msg.dest, Node[1].outchan1.msg.op, Node[1].outchan1.msg.data, 
+Node[1].outchan2.valid, Node[1].outchan2.msg.source, Node[1].outchan2.msg.dest, Node[1].outchan2.msg.op, Node[1].outchan2.msg.data, 
+Node[1].outchan3.valid, Node[1].outchan3.msg.source, Node[1].outchan3.msg.dest, Node[1].outchan3.msg.op, Node[1].outchan3.msg.data, 
+directory[1], home_requests.invalidate_list[1]);  
+
+N2_Client_processes_invalidate_request_for_addr: process Client_processes_invalidate_request_for_addr(2, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[2].cache.state, Node[2].cache.data, Node[2].local_requests, Node[2].remote_requests.op, 
+Node[2].remote_requests.data, Node[2].remote_requests.status, Node[2].remote_requests.home, 
+Node[2].inchan1.valid, Node[2].inchan1.msg.source, Node[2].inchan1.msg.dest, Node[2].inchan1.msg.op, Node[2].inchan1.msg.data, 
+Node[2].inchan2.valid, Node[2].inchan2.msg.source, Node[2].inchan2.msg.dest, Node[2].inchan2.msg.op, Node[2].inchan2.msg.data, 
+Node[2].inchan3.valid, Node[2].inchan3.msg.source, Node[2].inchan3.msg.dest, Node[2].inchan3.msg.op, Node[2].inchan3.msg.data, 
+Node[2].outchan1.valid, Node[2].outchan1.msg.source, Node[2].outchan1.msg.dest, Node[2].outchan1.msg.op, Node[2].outchan1.msg.data, 
+Node[2].outchan2.valid, Node[2].outchan2.msg.source, Node[2].outchan2.msg.dest, Node[2].outchan2.msg.op, Node[2].outchan2.msg.data, 
+Node[2].outchan3.valid, Node[2].outchan3.msg.source, Node[2].outchan3.msg.dest, Node[2].outchan3.msg.op, Node[2].outchan3.msg.data, 
+directory[2], home_requests.invalidate_list[2]);  
+
+N3_Client_processes_invalidate_request_for_addr: process Client_processes_invalidate_request_for_addr(3, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[3].cache.state, Node[3].cache.data, Node[3].local_requests, Node[3].remote_requests.op, 
+Node[3].remote_requests.data, Node[3].remote_requests.status, Node[3].remote_requests.home, 
+Node[3].inchan1.valid, Node[3].inchan1.msg.source, Node[3].inchan1.msg.dest, Node[3].inchan1.msg.op, Node[3].inchan1.msg.data, 
+Node[3].inchan2.valid, Node[3].inchan2.msg.source, Node[3].inchan2.msg.dest, Node[3].inchan2.msg.op, Node[3].inchan2.msg.data, 
+Node[3].inchan3.valid, Node[3].inchan3.msg.source, Node[3].inchan3.msg.dest, Node[3].inchan3.msg.op, Node[3].inchan3.msg.data, 
+Node[3].outchan1.valid, Node[3].outchan1.msg.source, Node[3].outchan1.msg.dest, Node[3].outchan1.msg.op, Node[3].outchan1.msg.data, 
+Node[3].outchan2.valid, Node[3].outchan2.msg.source, Node[3].outchan2.msg.dest, Node[3].outchan2.msg.op, Node[3].outchan2.msg.data, 
+Node[3].outchan3.valid, Node[3].outchan3.msg.source, Node[3].outchan3.msg.dest, Node[3].outchan3.msg.op, Node[3].outchan3.msg.data, 
+directory[3], home_requests.invalidate_list[3]);  
+-----------------------------------------------------------------------------
+
+N0_Client_prepare_invalidate_ack_for_addr: process Client_prepare_invalidate_ack_for_addr(0, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[0], home_requests.invalidate_list[0]);  
+
+N1_Client_prepare_invalidate_ack_for_addr: process Client_prepare_invalidate_ack_for_addr(1, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[1].cache.state, Node[1].cache.data, Node[1].local_requests, Node[1].remote_requests.op, 
+Node[1].remote_requests.data, Node[1].remote_requests.status, Node[1].remote_requests.home, 
+Node[1].inchan1.valid, Node[1].inchan1.msg.source, Node[1].inchan1.msg.dest, Node[1].inchan1.msg.op, Node[1].inchan1.msg.data, 
+Node[1].inchan2.valid, Node[1].inchan2.msg.source, Node[1].inchan2.msg.dest, Node[1].inchan2.msg.op, Node[1].inchan2.msg.data, 
+Node[1].inchan3.valid, Node[1].inchan3.msg.source, Node[1].inchan3.msg.dest, Node[1].inchan3.msg.op, Node[1].inchan3.msg.data, 
+Node[1].outchan1.valid, Node[1].outchan1.msg.source, Node[1].outchan1.msg.dest, Node[1].outchan1.msg.op, Node[1].outchan1.msg.data, 
+Node[1].outchan2.valid, Node[1].outchan2.msg.source, Node[1].outchan2.msg.dest, Node[1].outchan2.msg.op, Node[1].outchan2.msg.data, 
+Node[1].outchan3.valid, Node[1].outchan3.msg.source, Node[1].outchan3.msg.dest, Node[1].outchan3.msg.op, Node[1].outchan3.msg.data, 
+directory[1], home_requests.invalidate_list[1]);  
+
+N2_Client_prepare_invalidate_ack_for_addr: process Client_prepare_invalidate_ack_for_addr(2, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[2].cache.state, Node[2].cache.data, Node[2].local_requests, Node[2].remote_requests.op, 
+Node[2].remote_requests.data, Node[2].remote_requests.status, Node[2].remote_requests.home, 
+Node[2].inchan1.valid, Node[2].inchan1.msg.source, Node[2].inchan1.msg.dest, Node[2].inchan1.msg.op, Node[2].inchan1.msg.data, 
+Node[2].inchan2.valid, Node[2].inchan2.msg.source, Node[2].inchan2.msg.dest, Node[2].inchan2.msg.op, Node[2].inchan2.msg.data, 
+Node[2].inchan3.valid, Node[2].inchan3.msg.source, Node[2].inchan3.msg.dest, Node[2].inchan3.msg.op, Node[2].inchan3.msg.data, 
+Node[2].outchan1.valid, Node[2].outchan1.msg.source, Node[2].outchan1.msg.dest, Node[2].outchan1.msg.op, Node[2].outchan1.msg.data, 
+Node[2].outchan2.valid, Node[2].outchan2.msg.source, Node[2].outchan2.msg.dest, Node[2].outchan2.msg.op, Node[2].outchan2.msg.data, 
+Node[2].outchan3.valid, Node[2].outchan3.msg.source, Node[2].outchan3.msg.dest, Node[2].outchan3.msg.op, Node[2].outchan3.msg.data, 
+directory[2], home_requests.invalidate_list[2]);  
+
+N3_Client_prepare_invalidate_ack_for_addr: process Client_prepare_invalidate_ack_for_addr(3, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[3].cache.state, Node[3].cache.data, Node[3].local_requests, Node[3].remote_requests.op, 
+Node[3].remote_requests.data, Node[3].remote_requests.status, Node[3].remote_requests.home, 
+Node[3].inchan1.valid, Node[3].inchan1.msg.source, Node[3].inchan1.msg.dest, Node[3].inchan1.msg.op, Node[3].inchan1.msg.data, 
+Node[3].inchan2.valid, Node[3].inchan2.msg.source, Node[3].inchan2.msg.dest, Node[3].inchan2.msg.op, Node[3].inchan2.msg.data, 
+Node[3].inchan3.valid, Node[3].inchan3.msg.source, Node[3].inchan3.msg.dest, Node[3].inchan3.msg.op, Node[3].inchan3.msg.data, 
+Node[3].outchan1.valid, Node[3].outchan1.msg.source, Node[3].outchan1.msg.dest, Node[3].outchan1.msg.op, Node[3].outchan1.msg.data, 
+Node[3].outchan2.valid, Node[3].outchan2.msg.source, Node[3].outchan2.msg.dest, Node[3].outchan2.msg.op, Node[3].outchan2.msg.data, 
+Node[3].outchan3.valid, Node[3].outchan3.msg.source, Node[3].outchan3.msg.dest, Node[3].outchan3.msg.op, Node[3].outchan3.msg.data, 
+directory[3], home_requests.invalidate_list[3]);  
+-----------------------------------------------------------------------------
+
+N0_Client_receives_reply_from_home: process Client_receives_reply_from_home(0, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[0], home_requests.invalidate_list[0]);  
+
+N1_Client_receives_reply_from_home: process Client_receives_reply_from_home(1, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[1].cache.state, Node[1].cache.data, Node[1].local_requests, Node[1].remote_requests.op, 
+Node[1].remote_requests.data, Node[1].remote_requests.status, Node[1].remote_requests.home, 
+Node[1].inchan1.valid, Node[1].inchan1.msg.source, Node[1].inchan1.msg.dest, Node[1].inchan1.msg.op, Node[1].inchan1.msg.data, 
+Node[1].inchan2.valid, Node[1].inchan2.msg.source, Node[1].inchan2.msg.dest, Node[1].inchan2.msg.op, Node[1].inchan2.msg.data, 
+Node[1].inchan3.valid, Node[1].inchan3.msg.source, Node[1].inchan3.msg.dest, Node[1].inchan3.msg.op, Node[1].inchan3.msg.data, 
+Node[1].outchan1.valid, Node[1].outchan1.msg.source, Node[1].outchan1.msg.dest, Node[1].outchan1.msg.op, Node[1].outchan1.msg.data, 
+Node[1].outchan2.valid, Node[1].outchan2.msg.source, Node[1].outchan2.msg.dest, Node[1].outchan2.msg.op, Node[1].outchan2.msg.data, 
+Node[1].outchan3.valid, Node[1].outchan3.msg.source, Node[1].outchan3.msg.dest, Node[1].outchan3.msg.op, Node[1].outchan3.msg.data, 
+directory[1], home_requests.invalidate_list[1]);  
+
+N2_Client_receives_reply_from_home: process Client_receives_reply_from_home(2, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[2].cache.state, Node[2].cache.data, Node[2].local_requests, Node[2].remote_requests.op, 
+Node[2].remote_requests.data, Node[2].remote_requests.status, Node[2].remote_requests.home, 
+Node[2].inchan1.valid, Node[2].inchan1.msg.source, Node[2].inchan1.msg.dest, Node[2].inchan1.msg.op, Node[2].inchan1.msg.data, 
+Node[2].inchan2.valid, Node[2].inchan2.msg.source, Node[2].inchan2.msg.dest, Node[2].inchan2.msg.op, Node[2].inchan2.msg.data, 
+Node[2].inchan3.valid, Node[2].inchan3.msg.source, Node[2].inchan3.msg.dest, Node[2].inchan3.msg.op, Node[2].inchan3.msg.data, 
+Node[2].outchan1.valid, Node[2].outchan1.msg.source, Node[2].outchan1.msg.dest, Node[2].outchan1.msg.op, Node[2].outchan1.msg.data, 
+Node[2].outchan2.valid, Node[2].outchan2.msg.source, Node[2].outchan2.msg.dest, Node[2].outchan2.msg.op, Node[2].outchan2.msg.data, 
+Node[2].outchan3.valid, Node[2].outchan3.msg.source, Node[2].outchan3.msg.dest, Node[2].outchan3.msg.op, Node[2].outchan3.msg.data, 
+directory[2], home_requests.invalidate_list[2]);  
+
+N3_Client_receives_reply_from_home: process Client_receives_reply_from_home(3, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[3].cache.state, Node[3].cache.data, Node[3].local_requests, Node[3].remote_requests.op, 
+Node[3].remote_requests.data, Node[3].remote_requests.status, Node[3].remote_requests.home, 
+Node[3].inchan1.valid, Node[3].inchan1.msg.source, Node[3].inchan1.msg.dest, Node[3].inchan1.msg.op, Node[3].inchan1.msg.data, 
+Node[3].inchan2.valid, Node[3].inchan2.msg.source, Node[3].inchan2.msg.dest, Node[3].inchan2.msg.op, Node[3].inchan2.msg.data, 
+Node[3].inchan3.valid, Node[3].inchan3.msg.source, Node[3].inchan3.msg.dest, Node[3].inchan3.msg.op, Node[3].inchan3.msg.data, 
+Node[3].outchan1.valid, Node[3].outchan1.msg.source, Node[3].outchan1.msg.dest, Node[3].outchan1.msg.op, Node[3].outchan1.msg.data, 
+Node[3].outchan2.valid, Node[3].outchan2.msg.source, Node[3].outchan2.msg.dest, Node[3].outchan2.msg.op, Node[3].outchan2.msg.data, 
+Node[3].outchan3.valid, Node[3].outchan3.msg.source, Node[3].outchan3.msg.dest, Node[3].outchan3.msg.op, Node[3].outchan3.msg.data, 
+directory[3], home_requests.invalidate_list[3]);  
+-----------------------------------------------------------------------------
+
+N0_Client_stores_data_for_addr: process Client_stores_data_for_addr(0, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[0], home_requests.invalidate_list[0]);  
+
+N1_Client_stores_data_for_addr: process Client_stores_data_for_addr(1, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[1].cache.state, Node[1].cache.data, Node[1].local_requests, Node[1].remote_requests.op, 
+Node[1].remote_requests.data, Node[1].remote_requests.status, Node[1].remote_requests.home, 
+Node[1].inchan1.valid, Node[1].inchan1.msg.source, Node[1].inchan1.msg.dest, Node[1].inchan1.msg.op, Node[1].inchan1.msg.data, 
+Node[1].inchan2.valid, Node[1].inchan2.msg.source, Node[1].inchan2.msg.dest, Node[1].inchan2.msg.op, Node[1].inchan2.msg.data, 
+Node[1].inchan3.valid, Node[1].inchan3.msg.source, Node[1].inchan3.msg.dest, Node[1].inchan3.msg.op, Node[1].inchan3.msg.data, 
+Node[1].outchan1.valid, Node[1].outchan1.msg.source, Node[1].outchan1.msg.dest, Node[1].outchan1.msg.op, Node[1].outchan1.msg.data, 
+Node[1].outchan2.valid, Node[1].outchan2.msg.source, Node[1].outchan2.msg.dest, Node[1].outchan2.msg.op, Node[1].outchan2.msg.data, 
+Node[1].outchan3.valid, Node[1].outchan3.msg.source, Node[1].outchan3.msg.dest, Node[1].outchan3.msg.op, Node[1].outchan3.msg.data, 
+directory[1], home_requests.invalidate_list[1]);  
+
+N2_Client_stores_data_for_addr: process Client_stores_data_for_addr(2, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[2].cache.state, Node[2].cache.data, Node[2].local_requests, Node[2].remote_requests.op, 
+Node[2].remote_requests.data, Node[2].remote_requests.status, Node[2].remote_requests.home, 
+Node[2].inchan1.valid, Node[2].inchan1.msg.source, Node[2].inchan1.msg.dest, Node[2].inchan1.msg.op, Node[2].inchan1.msg.data, 
+Node[2].inchan2.valid, Node[2].inchan2.msg.source, Node[2].inchan2.msg.dest, Node[2].inchan2.msg.op, Node[2].inchan2.msg.data, 
+Node[2].inchan3.valid, Node[2].inchan3.msg.source, Node[2].inchan3.msg.dest, Node[2].inchan3.msg.op, Node[2].inchan3.msg.data, 
+Node[2].outchan1.valid, Node[2].outchan1.msg.source, Node[2].outchan1.msg.dest, Node[2].outchan1.msg.op, Node[2].outchan1.msg.data, 
+Node[2].outchan2.valid, Node[2].outchan2.msg.source, Node[2].outchan2.msg.dest, Node[2].outchan2.msg.op, Node[2].outchan2.msg.data, 
+Node[2].outchan3.valid, Node[2].outchan3.msg.source, Node[2].outchan3.msg.dest, Node[2].outchan3.msg.op, Node[2].outchan3.msg.data, 
+directory[2], home_requests.invalidate_list[2]);  
+
+N3_Client_stores_data_for_addr: process Client_stores_data_for_addr(3, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[3].cache.state, Node[3].cache.data, Node[3].local_requests, Node[3].remote_requests.op, 
+Node[3].remote_requests.data, Node[3].remote_requests.status, Node[3].remote_requests.home, 
+Node[3].inchan1.valid, Node[3].inchan1.msg.source, Node[3].inchan1.msg.dest, Node[3].inchan1.msg.op, Node[3].inchan1.msg.data, 
+Node[3].inchan2.valid, Node[3].inchan2.msg.source, Node[3].inchan2.msg.dest, Node[3].inchan2.msg.op, Node[3].inchan2.msg.data, 
+Node[3].inchan3.valid, Node[3].inchan3.msg.source, Node[3].inchan3.msg.dest, Node[3].inchan3.msg.op, Node[3].inchan3.msg.data, 
+Node[3].outchan1.valid, Node[3].outchan1.msg.source, Node[3].outchan1.msg.dest, Node[3].outchan1.msg.op, Node[3].outchan1.msg.data, 
+Node[3].outchan2.valid, Node[3].outchan2.msg.source, Node[3].outchan2.msg.dest, Node[3].outchan2.msg.op, Node[3].outchan2.msg.data, 
+Node[3].outchan3.valid, Node[3].outchan3.msg.source, Node[3].outchan3.msg.dest, Node[3].outchan3.msg.op, Node[3].outchan3.msg.data, 
+directory[3], home_requests.invalidate_list[3]);  
+-----------------------------------------------------------------------------
+
+N0_Home_accepts_a_request_message: process Home_accepts_a_request_message(0, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[0], home_requests.invalidate_list[0]);  
+
+N1_Home_accepts_a_request_message: process Home_accepts_a_request_message(1, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[1], home_requests.invalidate_list[1]);  
+
+N2_Home_accepts_a_request_message: process Home_accepts_a_request_message(2, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[2], home_requests.invalidate_list[2]);  
+
+N3_Home_accepts_a_request_message: process Home_accepts_a_request_message(3, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[3], home_requests.invalidate_list[3]);  
+
+-----------------------------------------------------------------------------
+
+N0_Home_prepares_invalidate_for_addr: process Home_prepares_invalidate_for_addr(0, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[0], home_requests.invalidate_list[0]);  
+
+N1_Home_prepares_invalidate_for_addr: process Home_prepares_invalidate_for_addr(1, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[1], home_requests.invalidate_list[1]);  
+
+N2_Home_prepares_invalidate_for_addr: process Home_prepares_invalidate_for_addr(2, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[2], home_requests.invalidate_list[2]);  
+
+N3_Home_prepares_invalidate_for_addr: process Home_prepares_invalidate_for_addr(3, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[3], home_requests.invalidate_list[3]);  
+
+-----------------------------------------------------------------------------
+
+N0_Home_processes_invalidate_ack: process Home_processes_invalidate_ack(0, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[0], home_requests.invalidate_list[0]);  
+
+N1_Home_processes_invalidate_ack: process Home_processes_invalidate_ack(1, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[1], home_requests.invalidate_list[1]);  
+
+N2_Home_processes_invalidate_ack: process Home_processes_invalidate_ack(2, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[2], home_requests.invalidate_list[2]);  
+
+N3_Home_processes_invalidate_ack: process Home_processes_invalidate_ack(3, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[3], home_requests.invalidate_list[3]);  
+
+-----------------------------------------------------------------------------
+
+N0_Home_sends_grant_for_addr: process Home_sends_grant_for_addr(0, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[0], home_requests.invalidate_list[0]);  
+
+N1_Home_sends_grant_for_addr: process Home_sends_grant_for_addr(1, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[1], home_requests.invalidate_list[1]);  
+
+N2_Home_sends_grant_for_addr: process Home_sends_grant_for_addr(2, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[2], home_requests.invalidate_list[2]);  
+
+N3_Home_sends_grant_for_addr: process Home_sends_grant_for_addr(3, 0, 0, 1, 2, 3, 
+memory, auxdata, directory[0], Node[0].cache.state, 
+Node[0].cache.data, directory[0], directory[1], directory[2], directory[3], 
+home_requests.source, home_requests.op, home_requests.data, home_requests.status, 
+home_requests.invalidate_list[0], home_requests.invalidate_list[1], 
+home_requests.invalidate_list[2], home_requests.invalidate_list[3], 
+Node[0].cache.state, Node[0].cache.data, Node[0].local_requests, Node[0].remote_requests.op, 
+Node[0].remote_requests.data, Node[0].remote_requests.status, Node[0].remote_requests.home, 
+Node[0].inchan1.valid, Node[0].inchan1.msg.source, Node[0].inchan1.msg.dest, Node[0].inchan1.msg.op, Node[0].inchan1.msg.data, 
+Node[0].inchan2.valid, Node[0].inchan2.msg.source, Node[0].inchan2.msg.dest, Node[0].inchan2.msg.op, Node[0].inchan2.msg.data, 
+Node[0].inchan3.valid, Node[0].inchan3.msg.source, Node[0].inchan3.msg.dest, Node[0].inchan3.msg.op, Node[0].inchan3.msg.data, 
+Node[0].outchan1.valid, Node[0].outchan1.msg.source, Node[0].outchan1.msg.dest, Node[0].outchan1.msg.op, Node[0].outchan1.msg.data, 
+Node[0].outchan2.valid, Node[0].outchan2.msg.source, Node[0].outchan2.msg.dest, Node[0].outchan2.msg.op, Node[0].outchan2.msg.data, 
+Node[0].outchan3.valid, Node[0].outchan3.msg.source, Node[0].outchan3.msg.dest, Node[0].outchan3.msg.op, Node[0].outchan3.msg.data, 
+directory[3], home_requests.invalidate_list[3]);  
+
+
+-----------------------------------------------------------------------------
+ASSIGN
+  init(directory[0]):= cache_invalid;
+  init(directory[1]):= cache_invalid;
+  init(directory[2]):= cache_invalid;
+  init(directory[3]):= cache_invalid;
+  init(home_requests.source):= 0;
+  init(home_requests.op):= op_invalid;
+  init(home_requests.data):= FALSE;
+  init(home_requests.invalidate_list[0]):= FALSE;
+  init(home_requests.invalidate_list[1]):= FALSE ;
+  init(home_requests.invalidate_list[2]):= FALSE ;
+  init(home_requests.invalidate_list[3]):= FALSE ;
+  init(home_requests.status):= inactive;
+  init(memory):= FALSE;
+  init(auxdata):= FALSE;
+
+
+ SPEC    
+   AG !(Node[0].cache.state = cache_exclusive & Node[1].cache.state = cache_exclusive)
+
+--SPEC
+--   AG !(Node[0].cache.state = cache_exclusive & Node[1].cache.state = cache_shared)
+
+--SPEC
+--  AG !(Node[0].cache.state = cache_shared & Node[1].cache.state = cache_exclusive)
+ 
+--SPEC
+--  AG (Node[0].cache.state = cache_exclusive -> Node[1].cache.state = cache_invalid)
+   
+--SPEC
+--   AG (Node[1].cache.state = cache_exclusive -> Node[0].cache.state = cache_invalid)
+
+-----------------------------------------------------------------------------
+  
+MODULE node(mynode, home)
+VAR
+  cache:           cache_record;
+  local_requests:  boolean;
+  remote_requests: addr_request;
+  inchan1:         message_buf;
+  inchan2:         message_buf;
+  inchan3:         message_buf;
+  outchan1:       message_buf;
+  outchan2:       message_buf;
+  outchan3:       message_buf;
+  
+ASSIGN
+  init(cache.state):= cache_invalid;
+  init(cache.data):= FALSE;
+  init(local_requests):= FALSE;
+  init(remote_requests.home):= 0;
+  init(remote_requests.op):= op_invalid;
+  init(remote_requests.data):= FALSE;
+  init(remote_requests.status):= inactive;
+
+  init(inchan1.valid):= FALSE;
+  init(inchan1.msg.source):= 0;
+  init(inchan1.msg.dest):= 0;
+  init(inchan1.msg.op):= op_invalid;
+  init(inchan1.msg.data):= FALSE;
+  init(inchan2.valid):= FALSE;
+  init(inchan2.msg.source):= 0;
+  init(inchan2.msg.dest):= 0;
+  init(inchan2.msg.op):= op_invalid;
+  init(inchan2.msg.data):= FALSE;
+  init(inchan3.valid):= FALSE;
+  init(inchan3.msg.source):= 0;
+  init(inchan3.msg.dest):= 0;
+  init(inchan3.msg.op):= op_invalid;
+  init(inchan3.msg.data):= FALSE;
+  
+  init(outchan1.valid):= FALSE;
+  init(outchan1.msg.source):= 0;
+  init(outchan1.msg.dest):= 0;
+  init(outchan1.msg.op):= op_invalid;
+  init(outchan1.msg.data):= FALSE;
+  init(outchan2.valid):= FALSE;
+  init(outchan2.msg.source):= 0;
+  init(outchan2.msg.dest):= 0;
+  init(outchan2.msg.op):= op_invalid;
+  init(outchan2.msg.data):= FALSE;
+  init(outchan3.valid):= FALSE;
+  init(outchan3.msg.source):= 0;
+  init(outchan3.msg.dest):= 0;
+  init(outchan3.msg.op):= op_invalid;
+  init(outchan3.msg.data):= FALSE;
+
+
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+MODULE Client_generates_new_req_for_addr(mynode, home, req, n0, n1, n2, n3, 
+memory_addr_data, auxdata_addr_data, directory_addr_home, cache_state_home, 
+cache_data_home, directory_addr_n0, directory_addr_n1, directory_addr_n2, directory_addr_n3, 
+home_requests_addr_source, home_requests_addr_op, home_requests_addr_data, home_requests_addr_status,
+home_requests_addr_invalidate_list_n0, home_requests_addr_invalidate_list_n1, 
+home_requests_addr_invalidate_list_n2, home_requests_addr_invalidate_list_n3, 
+cache_addr_state, cache_addr_data, local_requests_addr, remote_requests_addr_op, 
+remote_requests_addr_data, remote_requests_addr_status, remote_requests_addr_home, 
+inchan_1_valid, inchan_1_msg_source, inchan_1_msg_dest, inchan_1_msg_op, inchan_1_msg_data, 
+inchan_2_valid, inchan_2_msg_source, inchan_2_msg_dest, inchan_2_msg_op, inchan_2_msg_data, 
+inchan_3_valid, inchan_3_msg_source, inchan_3_msg_dest, inchan_3_msg_op, inchan_3_msg_data, 
+outchan_1_valid, outchan_1_msg_source, outchan_1_msg_dest, outchan_1_msg_op, outchan_1_msg_data, 
+outchan_2_valid, outchan_2_msg_source, outchan_2_msg_dest, outchan_2_msg_op, outchan_2_msg_data, 
+outchan_3_valid, outchan_3_msg_source, outchan_3_msg_dest, outchan_3_msg_op, outchan_3_msg_data, 
+directory_addr_mynode, home_requests_addr_invalidate_list_mynode)
+ASSIGN
+
+  next(outchan_1_msg_source):=
+    case
+--Client_generates_new_req_for_addr;
+      !local_requests_addr & outchan_1_msg_op = op_invalid 
+      & ((req = read_shared & cache_addr_state = cache_invalid)
+       | (req = read_exclusive & cache_addr_state = cache_invalid)
+       | (req = req_upgrade & cache_addr_state = cache_shared))
+      & !outchan_1_valid
+       : mynode;
+      TRUE: outchan_1_msg_source;  
+    esac;
+    
+  next(outchan_1_msg_dest):=
+    case
+ --Client_generates_new_req_for_addr;
+      !local_requests_addr & outchan_1_msg_op = op_invalid 
+      & ((req = read_shared & cache_addr_state = cache_invalid)
+       | (req = read_exclusive & cache_addr_state = cache_invalid)
+       | (req = req_upgrade & cache_addr_state = cache_shared))
+      & !outchan_1_valid
+       : home;
+      TRUE: outchan_1_msg_dest;  
+    esac;
+    
+  next(outchan_1_msg_op):=
+    case
+ --Client_generates_new_req_for_addr;
+      !local_requests_addr & outchan_1_msg_op = op_invalid 
+      & ((req = read_shared & cache_addr_state = cache_invalid)
+       | (req = read_exclusive & cache_addr_state = cache_invalid)
+       | (req = req_upgrade & cache_addr_state = cache_shared))
+      & !outchan_1_valid
+       : req;
+      TRUE: outchan_1_msg_op;  
+    esac;
+
+
+  next(outchan_1_valid):=
+    case
+ --Client_generates_new_req_for_addr;
+      !local_requests_addr & outchan_1_msg_op = op_invalid 
+      & ((req = read_shared & cache_addr_state = cache_invalid)
+       | (req = read_exclusive & cache_addr_state = cache_invalid)
+       | (req = req_upgrade & cache_addr_state = cache_shared))
+      & !outchan_1_valid
+       : TRUE;
+      TRUE: outchan_1_valid;  
+    esac;
+
+  next(local_requests_addr):=
+    case
+ --Client_generates_new_req_for_addr;
+      !local_requests_addr & outchan_1_msg_op = op_invalid 
+      & ((req = read_shared & cache_addr_state = cache_invalid)
+       | (req = read_exclusive & cache_addr_state = cache_invalid)
+       | (req = req_upgrade & cache_addr_state = cache_shared))
+      & !outchan_1_valid
+       : TRUE;
+     TRUE: local_requests_addr;  
+    esac;
+
+-----------------------------------------------------------------------------
+MODULE Client_accepts_invalidate_request(mynode, home, n0, n1, n2, n3, 
+memory_addr_data, auxdata_addr_data, directory_addr_home, cache_state_home, 
+cache_data_home, directory_addr_n0, directory_addr_n1, directory_addr_n2, directory_addr_n3, 
+home_requests_addr_source, home_requests_addr_op, home_requests_addr_data, home_requests_addr_status,
+home_requests_addr_invalidate_list_n0, home_requests_addr_invalidate_list_n1, 
+home_requests_addr_invalidate_list_n2, home_requests_addr_invalidate_list_n3, 
+cache_addr_state, cache_addr_data, local_requests_addr, remote_requests_addr_op, 
+remote_requests_addr_data, remote_requests_addr_status, remote_requests_addr_home, 
+inchan_1_valid, inchan_1_msg_source, inchan_1_msg_dest, inchan_1_msg_op, inchan_1_msg_data, 
+inchan_2_valid, inchan_2_msg_source, inchan_2_msg_dest, inchan_2_msg_op, inchan_2_msg_data, 
+inchan_3_valid, inchan_3_msg_source, inchan_3_msg_dest, inchan_3_msg_op, inchan_3_msg_data, 
+outchan_1_valid, outchan_1_msg_source, outchan_1_msg_dest, outchan_1_msg_op, outchan_1_msg_data, 
+outchan_2_valid, outchan_2_msg_source, outchan_2_msg_dest, outchan_2_msg_op, outchan_2_msg_data, 
+outchan_3_valid, outchan_3_msg_source, outchan_3_msg_dest, outchan_3_msg_op, outchan_3_msg_data, 
+directory_addr_mynode, home_requests_addr_invalidate_list_mynode)
+ASSIGN
+
+
+
+  next(remote_requests_addr_home):=
+    case
+--Client_accepts_invalidate_request;
+      inchan_2_valid & inchan_2_msg_op = invalidate
+        & inchan_2_msg_dest = mynode
+        & remote_requests_addr_status = inactive: inchan_2_msg_source;
+      TRUE: remote_requests_addr_home;
+    esac;
+
+  next(remote_requests_addr_op):=
+    case
+--Client_accepts_invalidate_request;
+      inchan_2_valid & inchan_2_msg_op = invalidate
+        & inchan_2_msg_dest = mynode
+        & remote_requests_addr_status = inactive: inchan_2_msg_op;
+      TRUE: remote_requests_addr_op;
+    esac;
+
+  next(remote_requests_addr_status):=
+    case
+--Client_accepts_invalidate_request;
+      inchan_2_valid & inchan_2_msg_op = invalidate
+        & inchan_2_msg_dest = mynode
+        & remote_requests_addr_status = inactive: pending;
+      TRUE: remote_requests_addr_status;
+    esac;
+
+  next(inchan_2_valid):=
+    case
+--Client_accepts_invalidate_request;
+      inchan_2_valid & inchan_2_msg_op = invalidate
+        & inchan_2_msg_dest = mynode
+        & remote_requests_addr_status = inactive: FALSE;
+      TRUE: inchan_2_valid;
+    esac;
+
+  next(inchan_2_msg_op):=
+    case
+--Client_accepts_invalidate_request;
+      inchan_2_valid & inchan_2_msg_op = invalidate
+        & inchan_2_msg_dest = mynode
+        & remote_requests_addr_status = inactive: op_invalid;
+      TRUE: inchan_2_msg_op;
+    esac;
+
+  next(inchan_2_msg_dest):=
+    case
+--Client_accepts_invalidate_request;
+      inchan_2_valid & inchan_2_msg_op = invalidate
+        & inchan_2_msg_dest = mynode
+        & remote_requests_addr_status = inactive: 0;
+      TRUE: inchan_2_msg_dest;
+    esac;
+
+  next(inchan_2_msg_source):=
+    case
+--Client_accepts_invalidate_request;
+      inchan_2_valid & inchan_2_msg_op = invalidate
+        & inchan_2_msg_dest = mynode
+        & remote_requests_addr_status = inactive: 0;
+      TRUE: inchan_2_msg_source;
+    esac;
+
+
+-----------------------------------------------------------------------------
+MODULE Client_processes_invalidate_request_for_addr(mynode, home, n0, n1, n2, n3, 
+memory_addr_data, auxdata_addr_data, directory_addr_home, cache_state_home, 
+cache_data_home, directory_addr_n0, directory_addr_n1, directory_addr_n2, directory_addr_n3, 
+home_requests_addr_source, home_requests_addr_op, home_requests_addr_data, home_requests_addr_status,
+home_requests_addr_invalidate_list_n0, home_requests_addr_invalidate_list_n1, 
+home_requests_addr_invalidate_list_n2, home_requests_addr_invalidate_list_n3, 
+cache_addr_state, cache_addr_data, local_requests_addr, remote_requests_addr_op, 
+remote_requests_addr_data, remote_requests_addr_status, remote_requests_addr_home, 
+inchan_1_valid, inchan_1_msg_source, inchan_1_msg_dest, inchan_1_msg_op, inchan_1_msg_data, 
+inchan_2_valid, inchan_2_msg_source, inchan_2_msg_dest, inchan_2_msg_op, inchan_2_msg_data, 
+inchan_3_valid, inchan_3_msg_source, inchan_3_msg_dest, inchan_3_msg_op, inchan_3_msg_data, 
+outchan_1_valid, outchan_1_msg_source, outchan_1_msg_dest, outchan_1_msg_op, outchan_1_msg_data, 
+outchan_2_valid, outchan_2_msg_source, outchan_2_msg_dest, outchan_2_msg_op, outchan_2_msg_data, 
+outchan_3_valid, outchan_3_msg_source, outchan_3_msg_dest, outchan_3_msg_op, outchan_3_msg_data, 
+directory_addr_mynode, home_requests_addr_invalidate_list_mynode)
+ASSIGN
+
+  next(remote_requests_addr_data):=
+    case
+--Client_processes_invalidate_request_for_addr;
+     remote_requests_addr_status = pending
+        & remote_requests_addr_op = invalidate: cache_addr_data;
+      TRUE: remote_requests_addr_data;
+    esac; 
+
+  next(cache_addr_state):=
+    case
+--Client_processes_invalidate_request_for_addr;
+      remote_requests_addr_status = pending
+        & remote_requests_addr_op = invalidate: cache_invalid;
+      TRUE: cache_addr_state;
+    esac;
+
+  next(remote_requests_addr_status):=
+    case
+--Client_processes_invalidate_request_for_addr;
+      remote_requests_addr_status = pending
+        & remote_requests_addr_op = invalidate: completed;
+      TRUE: remote_requests_addr_status;
+    esac;
+
+
+-----------------------------------------------------------------------------
+MODULE Client_prepare_invalidate_ack_for_addr(mynode, home, n0, n1, n2, n3, 
+memory_addr_data, auxdata_addr_data, directory_addr_home, cache_state_home, 
+cache_data_home, directory_addr_n0, directory_addr_n1, directory_addr_n2, directory_addr_n3, 
+home_requests_addr_source, home_requests_addr_op, home_requests_addr_data, home_requests_addr_status,
+home_requests_addr_invalidate_list_n0, home_requests_addr_invalidate_list_n1, 
+home_requests_addr_invalidate_list_n2, home_requests_addr_invalidate_list_n3, 
+cache_addr_state, cache_addr_data, local_requests_addr, remote_requests_addr_op, 
+remote_requests_addr_data, remote_requests_addr_status, remote_requests_addr_home, 
+inchan_1_valid, inchan_1_msg_source, inchan_1_msg_dest, inchan_1_msg_op, inchan_1_msg_data, 
+inchan_2_valid, inchan_2_msg_source, inchan_2_msg_dest, inchan_2_msg_op, inchan_2_msg_data, 
+inchan_3_valid, inchan_3_msg_source, inchan_3_msg_dest, inchan_3_msg_op, inchan_3_msg_data, 
+outchan_1_valid, outchan_1_msg_source, outchan_1_msg_dest, outchan_1_msg_op, outchan_1_msg_data, 
+outchan_2_valid, outchan_2_msg_source, outchan_2_msg_dest, outchan_2_msg_op, outchan_2_msg_data, 
+outchan_3_valid, outchan_3_msg_source, outchan_3_msg_dest, outchan_3_msg_op, outchan_3_msg_data, 
+directory_addr_mynode, home_requests_addr_invalidate_list_mynode)
+ASSIGN
+
+
+  next(outchan_3_msg_op):=
+    case
+--Client_prepare_invalidate_ack_for_addr;    
+      remote_requests_addr_status = completed
+        & remote_requests_addr_op = invalidate
+        & outchan_3_msg_op = op_invalid
+        & !outchan_3_valid: invalidate_ack;
+      TRUE: outchan_3_msg_op;
+    esac;
+     
+  next(outchan_3_msg_source):=
+    case
+--Client_prepare_invalidate_ack_for_addr;    
+      remote_requests_addr_status = completed
+        & remote_requests_addr_op = invalidate
+        & outchan_3_msg_op = op_invalid
+        & !outchan_3_valid: mynode;
+      TRUE: outchan_3_msg_source;
+    esac;
+     
+  next(outchan_3_msg_dest):=
+    case
+--Client_prepare_invalidate_ack_for_addr;    
+      remote_requests_addr_status = completed
+        & remote_requests_addr_op = invalidate
+        & outchan_3_msg_op = op_invalid
+        & !outchan_3_valid: remote_requests_addr_home;
+      TRUE: outchan_3_msg_dest;
+    esac;
+
+  next(outchan_3_msg_data):=
+    case
+--Client_prepare_invalidate_ack_for_addr;    
+      remote_requests_addr_status = completed
+        & remote_requests_addr_op = invalidate
+        & outchan_3_msg_op = op_invalid
+        & !outchan_3_valid: remote_requests_addr_data;
+      TRUE: outchan_3_msg_data;
+    esac;
+
+  next(outchan_3_valid):=
+    case
+--Client_prepare_invalidate_ack_for_addr;    
+      remote_requests_addr_status = completed
+        & remote_requests_addr_op = invalidate
+        & outchan_3_msg_op = op_invalid
+        & !outchan_3_valid: TRUE;
+      TRUE: outchan_3_valid;
+    esac;
+
+  next(remote_requests_addr_status):=
+    case
+--Client_prepare_invalidate_ack_for_addr;
+      remote_requests_addr_status = completed
+        & remote_requests_addr_op = invalidate
+        & outchan_3_msg_op = op_invalid
+        & !outchan_3_valid: inactive;
+      TRUE: remote_requests_addr_status;
+    esac;
+
+
+-----------------------------------------------------------------------------
+MODULE Client_receives_reply_from_home(mynode, home, n0, n1, n2, n3, 
+memory_addr_data, auxdata_addr_data, directory_addr_home, cache_state_home, 
+cache_data_home, directory_addr_n0, directory_addr_n1, directory_addr_n2, directory_addr_n3, 
+home_requests_addr_source, home_requests_addr_op, home_requests_addr_data, home_requests_addr_status,
+home_requests_addr_invalidate_list_n0, home_requests_addr_invalidate_list_n1, 
+home_requests_addr_invalidate_list_n2, home_requests_addr_invalidate_list_n3, 
+cache_addr_state, cache_addr_data, local_requests_addr, remote_requests_addr_op, 
+remote_requests_addr_data, remote_requests_addr_status, remote_requests_addr_home, 
+inchan_1_valid, inchan_1_msg_source, inchan_1_msg_dest, inchan_1_msg_op, inchan_1_msg_data, 
+inchan_2_valid, inchan_2_msg_source, inchan_2_msg_dest, inchan_2_msg_op, inchan_2_msg_data, 
+inchan_3_valid, inchan_3_msg_source, inchan_3_msg_dest, inchan_3_msg_op, inchan_3_msg_data, 
+outchan_1_valid, outchan_1_msg_source, outchan_1_msg_dest, outchan_1_msg_op, outchan_1_msg_data, 
+outchan_2_valid, outchan_2_msg_source, outchan_2_msg_dest, outchan_2_msg_op, outchan_2_msg_data, 
+outchan_3_valid, outchan_3_msg_source, outchan_3_msg_dest, outchan_3_msg_op, outchan_3_msg_data, 
+directory_addr_mynode, home_requests_addr_invalidate_list_mynode)
+ASSIGN
+
+  next(cache_addr_data):=
+    case
+--Client_receives_reply_from_home;
+      inchan_2_valid & inchan_2_msg_dest = mynode & inchan_2_msg_op = grant_shared
+        : inchan_2_msg_data;
+      inchan_2_valid & inchan_2_msg_dest = mynode & inchan_2_msg_op = grant_exclusive
+        : inchan_2_msg_data;
+      TRUE: cache_addr_data;
+    esac;
+
+  next(cache_addr_state):=
+    case
+--Client_receives_reply_from_home;
+      inchan_2_valid & inchan_2_msg_dest = mynode & inchan_2_msg_op = grant_shared
+        : cache_shared;
+--Client_receives_reply_from_home;
+      inchan_2_valid & inchan_2_msg_dest = mynode & inchan_2_msg_op = grant_exclusive
+        : cache_exclusive;
+--Client_receives_reply_from_home;
+      inchan_2_valid & inchan_2_msg_dest = mynode & inchan_2_msg_op = grant_upgrade
+        : cache_exclusive;
+      TRUE: cache_addr_state;
+    esac;
+
+  next(local_requests_addr):=
+    case
+--Client_receives_reply_from_home;
+      inchan_2_valid & inchan_2_msg_dest = mynode & (inchan_2_msg_op = grant_shared
+        | inchan_2_msg_op = grant_upgrade | inchan_2_msg_op = grant_exclusive)
+        : FALSE;
+      TRUE: local_requests_addr;  
+    esac;
+    
+  next(inchan_2_valid):=
+    case
+--Client_receives_reply_from_home;
+      inchan_2_valid & inchan_2_msg_dest = mynode & (inchan_2_msg_op = grant_shared
+        | inchan_2_msg_op = grant_upgrade | inchan_2_msg_op = grant_exclusive)
+        : FALSE;
+      TRUE: inchan_2_valid;
+    esac;
+
+  next(inchan_2_msg_op):=
+    case
+--Client_receives_reply_from_home;
+      inchan_2_valid & inchan_2_msg_dest = mynode & (inchan_2_msg_op = grant_shared
+        | inchan_2_msg_op = grant_upgrade | inchan_2_msg_op = grant_exclusive)
+        : op_invalid;
+      TRUE: inchan_2_msg_op;
+    esac;
+
+  next(inchan_2_msg_dest):=
+    case
+--Client_receives_reply_from_home;
+      inchan_2_valid & inchan_2_msg_dest = mynode & (inchan_2_msg_op = grant_shared
+        | inchan_2_msg_op = grant_upgrade | inchan_2_msg_op = grant_exclusive)
+        : 0;
+      TRUE: inchan_2_msg_dest;
+    esac;
+
+  next(inchan_2_msg_source):=
+    case
+--Client_receives_reply_from_home;
+      inchan_2_valid & inchan_2_msg_dest = mynode & (inchan_2_msg_op = grant_shared
+        | inchan_2_msg_op = grant_upgrade | inchan_2_msg_op = grant_exclusive)
+        : 0;
+      TRUE: inchan_2_msg_source;
+    esac;
+
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+MODULE Client_stores_data_for_addr(mynode, home, n0, n1, n2, n3, 
+memory_addr_data, auxdata_addr_data, directory_addr_home, cache_state_home, 
+cache_data_home, directory_addr_n0, directory_addr_n1, directory_addr_n2, directory_addr_n3, 
+home_requests_addr_source, home_requests_addr_op, home_requests_addr_data, home_requests_addr_status,
+home_requests_addr_invalidate_list_n0, home_requests_addr_invalidate_list_n1, 
+home_requests_addr_invalidate_list_n2, home_requests_addr_invalidate_list_n3, 
+cache_addr_state, cache_addr_data, local_requests_addr, remote_requests_addr_op, 
+remote_requests_addr_data, remote_requests_addr_status, remote_requests_addr_home, 
+inchan_1_valid, inchan_1_msg_source, inchan_1_msg_dest, inchan_1_msg_op, inchan_1_msg_data, 
+inchan_2_valid, inchan_2_msg_source, inchan_2_msg_dest, inchan_2_msg_op, inchan_2_msg_data, 
+inchan_3_valid, inchan_3_msg_source, inchan_3_msg_dest, inchan_3_msg_op, inchan_3_msg_data, 
+outchan_1_valid, outchan_1_msg_source, outchan_1_msg_dest, outchan_1_msg_op, outchan_1_msg_data, 
+outchan_2_valid, outchan_2_msg_source, outchan_2_msg_dest, outchan_2_msg_op, outchan_2_msg_data, 
+outchan_3_valid, outchan_3_msg_source, outchan_3_msg_dest, outchan_3_msg_op, outchan_3_msg_data, 
+directory_addr_mynode, home_requests_addr_invalidate_list_mynode)
+ASSIGN
+
+  next(cache_addr_data):=
+    case
+--Client_stores_data_for_addr;
+      cache_addr_state = cache_exclusive & remote_requests_addr_status != pending & cache_addr_data = FALSE
+        : TRUE;
+--Client_stores_data_for_addr;
+      cache_addr_state = cache_exclusive & remote_requests_addr_status != pending & cache_addr_data = TRUE
+        : FALSE;
+      TRUE: cache_addr_data;
+    esac;
+
+  next(auxdata_addr_data):=
+    case
+--Client_stores_data_for_addr;
+      cache_addr_state = cache_exclusive & remote_requests_addr_status != pending & cache_addr_data = FALSE
+        : TRUE;
+--Client_stores_data_for_addr;
+      cache_addr_state = cache_exclusive & remote_requests_addr_status != pending & cache_addr_data = TRUE
+        : FALSE;
+      TRUE: auxdata_addr_data;
+    esac;
+
+
+         
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+MODULE Home_accepts_a_request_message(mynode, home, n0, n1, n2, n3, 
+memory_addr_data, auxdata_addr_data, directory_addr_home, cache_state_home, 
+cache_data_home, directory_addr_n0, directory_addr_n1, directory_addr_n2, directory_addr_n3, 
+home_requests_addr_source, home_requests_addr_op, home_requests_addr_data, home_requests_addr_status,
+home_requests_addr_invalidate_list_n0, home_requests_addr_invalidate_list_n1, 
+home_requests_addr_invalidate_list_n2, home_requests_addr_invalidate_list_n3, 
+cache_addr_state, cache_addr_data, local_requests_addr, remote_requests_addr_op, 
+remote_requests_addr_data, remote_requests_addr_status, remote_requests_addr_home, 
+inchan_1_valid, inchan_1_msg_source, inchan_1_msg_dest, inchan_1_msg_op, inchan_1_msg_data, 
+inchan_2_valid, inchan_2_msg_source, inchan_2_msg_dest, inchan_2_msg_op, inchan_2_msg_data, 
+inchan_3_valid, inchan_3_msg_source, inchan_3_msg_dest, inchan_3_msg_op, inchan_3_msg_data, 
+outchan_1_valid, outchan_1_msg_source, outchan_1_msg_dest, outchan_1_msg_op, outchan_1_msg_data, 
+outchan_2_valid, outchan_2_msg_source, outchan_2_msg_dest, outchan_2_msg_op, outchan_2_msg_data, 
+outchan_3_valid, outchan_3_msg_source, outchan_3_msg_dest, outchan_3_msg_op, outchan_3_msg_data, 
+directory_addr_mynode, home_requests_addr_invalidate_list_mynode)
+ASSIGN
+
+  next(home_requests_addr_op):=
+    case
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = req_upgrade & directory_addr_mynode = cache_invalid
+        : read_exclusive;
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = req_upgrade & directory_addr_mynode = cache_shared
+        : req_upgrade;
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & (inchan_1_msg_op = read_shared 
+        | inchan_1_msg_op = read_exclusive)
+        : inchan_1_msg_op; 
+      TRUE: home_requests_addr_op;
+    esac;
+    
+  next(home_requests_addr_source):=
+    case
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & (inchan_1_msg_op = read_shared 
+        | inchan_1_msg_op = read_exclusive
+        | inchan_1_msg_op = req_upgrade) 
+        : mynode;
+      TRUE: home_requests_addr_source;
+    esac;
+
+
+  next(home_requests_addr_data):=
+    case
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_shared & cache_state_home = cache_shared 
+        & directory_addr_home = cache_shared
+        : cache_data_home;  
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_shared & cache_state_home != cache_shared 
+        & directory_addr_home = cache_shared
+        : memory_addr_data;
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_shared 
+        & directory_addr_home = cache_invalid
+        & !(directory_addr_n0 = cache_exclusive | directory_addr_n1 = cache_exclusive
+        | directory_addr_n2 = cache_exclusive | directory_addr_n3 = cache_exclusive)
+        : memory_addr_data;
+
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = req_upgrade & directory_addr_mynode = cache_invalid
+        & (directory_addr_n0 = cache_invalid  
+        & directory_addr_n1 = cache_invalid 
+        & directory_addr_n2 = cache_invalid
+        & directory_addr_n3 = cache_invalid)
+        : memory_addr_data;
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_exclusive 
+        & (directory_addr_n0 = cache_invalid  
+        & directory_addr_n1 = cache_invalid 
+        & directory_addr_n2 = cache_invalid
+        & directory_addr_n3 = cache_invalid)
+        : memory_addr_data;
+      TRUE: home_requests_addr_data;
+    esac;
+  
+  next(home_requests_addr_status):=
+    case
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_shared 
+        & directory_addr_home = cache_shared
+        : completed;
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_shared 
+        & directory_addr_home = cache_invalid
+        & !(directory_addr_n0 = cache_exclusive | directory_addr_n1 = cache_exclusive
+        | directory_addr_n2 = cache_exclusive | directory_addr_n3 = cache_exclusive)
+        : completed;
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_shared 
+        & directory_addr_home != cache_shared
+        & (directory_addr_n0 = cache_exclusive | directory_addr_n1 = cache_exclusive
+        | directory_addr_n2 = cache_exclusive | directory_addr_n3 = cache_exclusive)
+        : pending;
+
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = req_upgrade & directory_addr_mynode = cache_shared
+        & (directory_addr_n0 != cache_invalid & mynode != n0
+        | directory_addr_n1 != cache_invalid & mynode != n1
+        | directory_addr_n2 != cache_invalid & mynode != n2
+        | directory_addr_n3 != cache_invalid & mynode != n3)
+        : pending;
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = req_upgrade & directory_addr_mynode = cache_shared
+        & !(directory_addr_n0 != cache_invalid & mynode != n0
+        | directory_addr_n1 != cache_invalid & mynode != n1
+        | directory_addr_n2 != cache_invalid & mynode != n2
+        | directory_addr_n3 != cache_invalid & mynode != n3)
+        : completed;
+
+
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = req_upgrade & directory_addr_mynode = cache_invalid
+        & (directory_addr_n0 != cache_invalid  
+        | directory_addr_n1 != cache_invalid 
+        | directory_addr_n2 != cache_invalid
+        | directory_addr_n3 != cache_invalid)
+        : pending;
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_exclusive 
+        & (directory_addr_n0 != cache_invalid  
+        | directory_addr_n1 != cache_invalid 
+        | directory_addr_n2 != cache_invalid
+        | directory_addr_n3 != cache_invalid)
+        : pending;
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = req_upgrade & directory_addr_mynode = cache_invalid
+        & !(directory_addr_n0 != cache_invalid  
+        | directory_addr_n1 != cache_invalid 
+        | directory_addr_n2 != cache_invalid
+        | directory_addr_n3 != cache_invalid)
+        : completed;
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_exclusive 
+        & !(directory_addr_n0 != cache_invalid  
+        | directory_addr_n1 != cache_invalid 
+        | directory_addr_n2 != cache_invalid
+        | directory_addr_n3 != cache_invalid)
+        : completed;
+      TRUE: home_requests_addr_status;
+    esac;
+    
+
+  next(home_requests_addr_invalidate_list_n0):=
+    case
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_shared
+        & directory_addr_home != cache_shared
+        & directory_addr_n0 = cache_exclusive
+        : TRUE;
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = req_upgrade & directory_addr_mynode = cache_shared
+        & directory_addr_n0 != cache_invalid & mynode != n0
+        : TRUE;
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = req_upgrade & directory_addr_mynode = cache_invalid
+        & directory_addr_n0 != cache_invalid
+        : TRUE;
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_exclusive
+        & directory_addr_n0 != cache_invalid
+        : TRUE;
+      TRUE: home_requests_addr_invalidate_list_n0;
+    esac;
+
+    
+  next(home_requests_addr_invalidate_list_n1):=
+    case
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_shared 
+        & directory_addr_home != cache_shared
+        & directory_addr_n1 = cache_exclusive
+        : TRUE;
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = req_upgrade & directory_addr_mynode = cache_shared
+        & directory_addr_n1 != cache_invalid & mynode != n1 
+        : TRUE;
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = req_upgrade & directory_addr_mynode = cache_invalid
+        & directory_addr_n1 != cache_invalid 
+        : TRUE;
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_exclusive 
+        & directory_addr_n1 != cache_invalid
+        : TRUE;
+      TRUE: home_requests_addr_invalidate_list_n1;
+    esac;
+
+
+  next(home_requests_addr_invalidate_list_n2):=
+    case
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_shared
+        & directory_addr_home != cache_shared
+        & directory_addr_n2 = cache_exclusive
+        : TRUE;
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = req_upgrade & directory_addr_mynode = cache_shared
+        & directory_addr_n2 != cache_invalid & mynode != n2
+        : TRUE;
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = req_upgrade & directory_addr_mynode = cache_invalid
+        & directory_addr_n2 != cache_invalid
+        : TRUE;
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_exclusive
+        & directory_addr_n2 != cache_invalid
+        : TRUE;
+      TRUE: home_requests_addr_invalidate_list_n2;
+    esac;
+
+
+  next(home_requests_addr_invalidate_list_n3):=
+    case
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_shared
+        & directory_addr_home != cache_shared
+        & directory_addr_n3 = cache_exclusive
+        : TRUE;
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = req_upgrade & directory_addr_mynode = cache_shared
+        & directory_addr_n3 != cache_invalid & mynode != n3
+        : TRUE;
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = req_upgrade & directory_addr_mynode = cache_invalid
+        & directory_addr_n3 != cache_invalid
+        : TRUE;
+
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & inchan_1_msg_op = read_exclusive
+        & directory_addr_n3 != cache_invalid
+        : TRUE;
+      TRUE: home_requests_addr_invalidate_list_n3;
+    esac;
+
+
+
+
+
+
+
+
+  next(inchan_1_valid):=
+    case
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & (inchan_1_msg_op = read_shared 
+        | inchan_1_msg_op = read_exclusive
+        | inchan_1_msg_op = req_upgrade) 
+        : FALSE;
+      TRUE: inchan_1_valid;
+    esac;
+
+  next(inchan_1_msg_op):=
+    case
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & (inchan_1_msg_op = read_shared 
+        | inchan_1_msg_op = read_exclusive
+        | inchan_1_msg_op = req_upgrade) 
+        : op_invalid;
+      TRUE: inchan_1_msg_op;
+    esac;
+
+  next(inchan_1_msg_source):=
+    case
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & (inchan_1_msg_op = read_shared 
+        | inchan_1_msg_op = read_exclusive
+        | inchan_1_msg_op = req_upgrade) 
+        : 0;
+      TRUE: inchan_1_msg_source;
+    esac;
+
+  next(inchan_1_msg_dest):=
+    case
+--Home_accepts_a_request_message;
+      inchan_1_valid & inchan_1_msg_source = mynode & home_requests_addr_status = inactive
+        & (inchan_1_msg_op = read_shared 
+        | inchan_1_msg_op = read_exclusive
+        | inchan_1_msg_op = req_upgrade) 
+        : 0;
+      TRUE: inchan_1_msg_dest;
+    esac;
+
+
+
+-----------------------------------------------------------------------------
+MODULE Home_prepares_invalidate_for_addr(mynode, home, n0, n1, n2, n3, 
+memory_addr_data, auxdata_addr_data, directory_addr_home, cache_state_home, 
+cache_data_home, directory_addr_n0, directory_addr_n1, directory_addr_n2, directory_addr_n3, 
+home_requests_addr_source, home_requests_addr_op, home_requests_addr_data, home_requests_addr_status,
+home_requests_addr_invalidate_list_n0, home_requests_addr_invalidate_list_n1, 
+home_requests_addr_invalidate_list_n2, home_requests_addr_invalidate_list_n3, 
+cache_addr_state, cache_addr_data, local_requests_addr, remote_requests_addr_op, 
+remote_requests_addr_data, remote_requests_addr_status, remote_requests_addr_home, 
+inchan_1_valid, inchan_1_msg_source, inchan_1_msg_dest, inchan_1_msg_op, inchan_1_msg_data, 
+inchan_2_valid, inchan_2_msg_source, inchan_2_msg_dest, inchan_2_msg_op, inchan_2_msg_data, 
+inchan_3_valid, inchan_3_msg_source, inchan_3_msg_dest, inchan_3_msg_op, inchan_3_msg_data, 
+outchan_1_valid, outchan_1_msg_source, outchan_1_msg_dest, outchan_1_msg_op, outchan_1_msg_data, 
+outchan_2_valid, outchan_2_msg_source, outchan_2_msg_dest, outchan_2_msg_op, outchan_2_msg_data, 
+outchan_3_valid, outchan_3_msg_source, outchan_3_msg_dest, outchan_3_msg_op, outchan_3_msg_data, 
+directory_addr_mynode, home_requests_addr_invalidate_list_mynode)
+ASSIGN
+
+  next(home_requests_addr_invalidate_list_mynode):=
+    case
+--Home_prepares_invalidate_for_addr;
+      home_requests_addr_status = pending
+        & outchan_2_msg_op = op_invalid
+        & !outchan_2_valid
+        & home_requests_addr_invalidate_list_mynode
+        : FALSE;
+      TRUE: home_requests_addr_invalidate_list_mynode;
+    esac;
+        
+  next(outchan_2_msg_op):=
+    case
+--Home_prepares_invalidate_for_addr;
+      home_requests_addr_status = pending
+        & outchan_2_msg_op = op_invalid
+        & !outchan_2_valid
+        & home_requests_addr_invalidate_list_mynode
+        : invalidate;
+      TRUE: outchan_2_msg_op;
+    esac;
+
+  next(outchan_2_msg_source):=
+    case
+--Home_prepares_invalidate_for_addr;
+      home_requests_addr_status = pending
+        & outchan_2_msg_op = op_invalid
+        & !outchan_2_valid
+        & home_requests_addr_invalidate_list_mynode
+        : home;
+      TRUE: outchan_2_msg_source;
+    esac;
+    
+  next(outchan_2_msg_dest):=
+    case
+--Home_prepares_invalidate_for_addr;
+      home_requests_addr_status = pending
+        & outchan_2_msg_op = op_invalid
+        & !outchan_2_valid
+        & home_requests_addr_invalidate_list_mynode
+        : mynode;
+      TRUE: outchan_2_msg_dest;
+    esac;
+        
+  next(outchan_2_valid):=
+    case
+--Home_prepares_invalidate_for_addr;
+      home_requests_addr_status = pending
+        & outchan_2_msg_op = op_invalid
+        & !outchan_2_valid
+        & home_requests_addr_invalidate_list_mynode
+        : TRUE;
+      TRUE: outchan_2_valid;
+    esac;
+
+
+
+-----------------------------------------------------------------------------
+MODULE Home_processes_invalidate_ack(mynode, home, n0, n1, n2, n3, 
+memory_addr_data, auxdata_addr_data, directory_addr_home, cache_state_home, 
+cache_data_home, directory_addr_n0, directory_addr_n1, directory_addr_n2, directory_addr_n3, 
+home_requests_addr_source, home_requests_addr_op, home_requests_addr_data, home_requests_addr_status,
+home_requests_addr_invalidate_list_n0, home_requests_addr_invalidate_list_n1, 
+home_requests_addr_invalidate_list_n2, home_requests_addr_invalidate_list_n3, 
+cache_addr_state, cache_addr_data, local_requests_addr, remote_requests_addr_op, 
+remote_requests_addr_data, remote_requests_addr_status, remote_requests_addr_home, 
+inchan_1_valid, inchan_1_msg_source, inchan_1_msg_dest, inchan_1_msg_op, inchan_1_msg_data, 
+inchan_2_valid, inchan_2_msg_source, inchan_2_msg_dest, inchan_2_msg_op, inchan_2_msg_data, 
+inchan_3_valid, inchan_3_msg_source, inchan_3_msg_dest, inchan_3_msg_op, inchan_3_msg_data, 
+outchan_1_valid, outchan_1_msg_source, outchan_1_msg_dest, outchan_1_msg_op, outchan_1_msg_data, 
+outchan_2_valid, outchan_2_msg_source, outchan_2_msg_dest, outchan_2_msg_op, outchan_2_msg_data, 
+outchan_3_valid, outchan_3_msg_source, outchan_3_msg_dest, outchan_3_msg_op, outchan_3_msg_data, 
+directory_addr_mynode, home_requests_addr_invalidate_list_mynode)
+ASSIGN
+
+  next(home_requests_addr_data):=
+    case
+--Home_processes_invalidate_ack;
+        inchan_3_valid & inchan_3_msg_source = mynode & home_requests_addr_status = pending
+        & inchan_3_msg_op = invalidate_ack
+        : inchan_3_msg_data;
+      TRUE: home_requests_addr_data;
+    esac;
+
+  
+  next(home_requests_addr_status):=
+    case
+--Home_processes_invalidate_ack;
+        inchan_3_valid & inchan_3_msg_source = mynode & home_requests_addr_status = pending
+        & inchan_3_msg_op = invalidate_ack
+        & home_requests_addr_op = read_shared
+        : completed;
+--Home_processes_invalidate_ack;
+        inchan_3_valid & inchan_3_msg_source = mynode & home_requests_addr_status = pending
+        & inchan_3_msg_op = invalidate_ack
+        & home_requests_addr_op = req_upgrade
+        & (((home_requests_addr_source != n0 -> directory_addr_n0 = cache_invalid) | mynode = n0)
+        & ((home_requests_addr_source != n1 -> directory_addr_n1 = cache_invalid) | mynode = n1)
+        & ((home_requests_addr_source != n2 -> directory_addr_n2 = cache_invalid) | mynode = n2)
+        & ((home_requests_addr_source != n3 -> directory_addr_n3 = cache_invalid) | mynode = n3))
+        : completed;
+--Home_processes_invalidate_ack;
+        inchan_3_valid & inchan_3_msg_source = mynode & home_requests_addr_status = pending
+        & inchan_3_msg_op = invalidate_ack
+        & home_requests_addr_op = read_exclusive
+        & ((directory_addr_n0 = cache_invalid | mynode = n0)
+        & (directory_addr_n1 = cache_invalid | mynode = n1)
+        & (directory_addr_n2 = cache_invalid | mynode = n2)
+        & (directory_addr_n3 = cache_invalid | mynode = n3))
+        : completed;
+      TRUE: home_requests_addr_status;
+    esac;
+
+
+
+
+
+
+
+
+  next(memory_addr_data):=
+    case
+--Home_processes_invalidate_ack;
+        inchan_3_valid & inchan_3_msg_source = mynode & home_requests_addr_status = pending
+        & inchan_3_msg_op = invalidate_ack
+        & directory_addr_mynode = cache_exclusive
+        : inchan_3_msg_data;
+      TRUE: memory_addr_data;
+    esac;
+      
+  next(directory_addr_mynode):=
+    case
+--Home_processes_invalidate_ack;
+        inchan_3_valid & inchan_3_msg_source = mynode & home_requests_addr_status = pending
+        & inchan_3_msg_op = invalidate_ack
+        : cache_invalid;
+      TRUE: directory_addr_mynode;
+    esac;
+
+
+  next(inchan_3_valid):=
+    case
+--Home_processes_invalidate_ack;
+        inchan_3_valid & inchan_3_msg_source = mynode & home_requests_addr_status = pending
+        & inchan_3_msg_op = invalidate_ack
+        : FALSE;
+      TRUE: inchan_3_valid;
+    esac;
+
+  next(inchan_3_msg_op):=
+    case
+--Home_processes_invalidate_ack;
+        inchan_3_valid & inchan_3_msg_source = mynode & home_requests_addr_status = pending
+        & inchan_3_msg_op = invalidate_ack
+        : op_invalid;
+      TRUE: inchan_3_msg_op;
+    esac;
+
+  next(inchan_3_msg_source):=
+    case
+--Home_processes_invalidate_ack;
+        inchan_3_valid & inchan_3_msg_source = mynode & home_requests_addr_status = pending
+        & inchan_3_msg_op = invalidate_ack
+        : 0;
+      TRUE: inchan_3_msg_source;
+    esac;
+
+  next(inchan_3_msg_dest):=
+    case
+--Home_processes_invalidate_ack;
+        inchan_3_valid & inchan_3_msg_source = mynode & home_requests_addr_status = pending
+        & inchan_3_msg_op = invalidate_ack
+        : 0;
+      TRUE: inchan_3_msg_dest;
+    esac;
+
+
+-----------------------------------------------------------------------------
+MODULE Home_sends_grant_for_addr(mynode, home, n0, n1, n2, n3, 
+memory_addr_data, auxdata_addr_data, directory_addr_home, cache_state_home, 
+cache_data_home, directory_addr_n0, directory_addr_n1, directory_addr_n2, directory_addr_n3, 
+home_requests_addr_source, home_requests_addr_op, home_requests_addr_data, home_requests_addr_status,
+home_requests_addr_invalidate_list_n0, home_requests_addr_invalidate_list_n1, 
+home_requests_addr_invalidate_list_n2, home_requests_addr_invalidate_list_n3, 
+cache_addr_state, cache_addr_data, local_requests_addr, remote_requests_addr_op, 
+remote_requests_addr_data, remote_requests_addr_status, remote_requests_addr_home, 
+inchan_1_valid, inchan_1_msg_source, inchan_1_msg_dest, inchan_1_msg_op, inchan_1_msg_data, 
+inchan_2_valid, inchan_2_msg_source, inchan_2_msg_dest, inchan_2_msg_op, inchan_2_msg_data, 
+inchan_3_valid, inchan_3_msg_source, inchan_3_msg_dest, inchan_3_msg_op, inchan_3_msg_data, 
+outchan_1_valid, outchan_1_msg_source, outchan_1_msg_dest, outchan_1_msg_op, outchan_1_msg_data, 
+outchan_2_valid, outchan_2_msg_source, outchan_2_msg_dest, outchan_2_msg_op, outchan_2_msg_data, 
+outchan_3_valid, outchan_3_msg_source, outchan_3_msg_dest, outchan_3_msg_op, outchan_3_msg_data, 
+directory_addr_mynode, home_requests_addr_invalidate_list_mynode)
+ASSIGN
+
+  next(outchan_2_msg_op):=
+    case
+--Home_sends_grant_for_addr;
+      home_requests_addr_status = completed & !outchan_2_valid
+        & home_requests_addr_op = read_shared
+        & home_requests_addr_source = mynode
+        & outchan_2_msg_op = op_invalid
+        : grant_shared;
+--Home_sends_grant_for_addr;
+      home_requests_addr_status = completed & !outchan_2_valid
+        & home_requests_addr_op = req_upgrade
+        & home_requests_addr_source = mynode
+        & outchan_2_msg_op = op_invalid
+        : grant_upgrade;
+--Home_sends_grant_for_addr;
+      home_requests_addr_status = completed & !outchan_2_valid
+        & home_requests_addr_op = read_exclusive
+        & home_requests_addr_source = mynode
+        & outchan_2_msg_op = op_invalid
+        : grant_exclusive;
+      TRUE: outchan_2_msg_op;
+    esac;
+    
+
+  next(directory_addr_mynode):=
+    case
+--Home_sends_grant_for_addr;
+      home_requests_addr_status = completed & !outchan_2_valid
+        & home_requests_addr_op = read_shared
+        & home_requests_addr_source = mynode
+        & outchan_2_msg_op = op_invalid
+        : cache_shared;
+--Home_sends_grant_for_addr;
+      home_requests_addr_status = completed & !outchan_2_valid
+        & home_requests_addr_op = req_upgrade
+        & home_requests_addr_source = mynode
+        & outchan_2_msg_op = op_invalid
+        : cache_exclusive;
+--Home_sends_grant_for_addr;
+      home_requests_addr_status = completed & !outchan_2_valid
+        & home_requests_addr_op = read_exclusive
+        & home_requests_addr_source = mynode
+        & outchan_2_msg_op = op_invalid
+        : cache_exclusive;
+      TRUE: directory_addr_mynode;
+    esac;
+
+  next(outchan_2_msg_data):=
+    case
+--Home_sends_grant_for_addr;
+      home_requests_addr_status = completed & !outchan_2_valid
+        & (home_requests_addr_op = read_shared
+        | home_requests_addr_op = read_exclusive
+        | home_requests_addr_op = req_upgrade)
+        & home_requests_addr_source = mynode
+        & outchan_2_msg_op = op_invalid
+        : home_requests_addr_data;
+      TRUE: outchan_2_msg_data;
+    esac;
+
+  next(home_requests_addr_status):=
+    case
+--Home_sends_grant_for_addr;
+      home_requests_addr_status = completed & !outchan_2_valid
+        & (home_requests_addr_op = read_shared
+        | home_requests_addr_op = read_exclusive
+        | home_requests_addr_op = req_upgrade)
+        & home_requests_addr_source = mynode
+        & outchan_2_msg_op = op_invalid
+        : inactive;
+      TRUE: home_requests_addr_status;
+    esac;
+
+
+
+
+  next(outchan_2_msg_source):=
+    case
+--Home_sends_grant_for_addr;
+      home_requests_addr_status = completed & !outchan_2_valid
+        & (home_requests_addr_op = read_shared
+        | home_requests_addr_op = read_exclusive
+        | home_requests_addr_op = req_upgrade)
+        & home_requests_addr_source = mynode
+        & outchan_2_msg_op = op_invalid
+        : home;
+        TRUE: outchan_2_msg_source;
+    esac;
+    
+  next(outchan_2_msg_dest):=
+    case
+--Home_sends_grant_for_addr;
+      home_requests_addr_status = completed & !outchan_2_valid
+        & (home_requests_addr_op = read_shared
+        | home_requests_addr_op = read_exclusive
+        | home_requests_addr_op = req_upgrade)
+        & home_requests_addr_source = mynode
+        & outchan_2_msg_op = op_invalid
+        : mynode;
+      TRUE: outchan_2_msg_dest;
+    esac;
+        
+  next(outchan_2_valid):=
+    case
+--Home_sends_grant_for_addr;
+      home_requests_addr_status = completed & !outchan_2_valid
+        & (home_requests_addr_op = read_shared
+        | home_requests_addr_op = read_exclusive
+        | home_requests_addr_op = req_upgrade)
+        & home_requests_addr_source = mynode
+        & outchan_2_msg_op = op_invalid
+        : TRUE;
+      TRUE: outchan_2_valid;
+    esac;
+
+
+-----------------------------------------------------------------------------
+MODULE channel_1(from, to, 
+outchan_1_valid, outchan_1_source, outchan_1_dest, outchan_1_op, outchan_1_data,
+inchan_1_valid, inchan_1_source, inchan_1_dest, inchan_1_op, inchan_1_data) 
+
+ASSIGN
+-----------------------------------------------------------------------------
+--Node[from] send message to Node[to];
+
+  next(outchan_1_valid):=
+    case
+      outchan_1_valid & !inchan_1_valid
+        & outchan_1_op != op_invalid & inchan_1_op = op_invalid
+        & outchan_1_source = from & outchan_1_dest = to
+        : FALSE;
+      TRUE: outchan_1_valid;
+    esac;
+    
+  next(outchan_1_op):=
+    case
+      outchan_1_valid & !inchan_1_valid
+        & outchan_1_op != op_invalid & inchan_1_op = op_invalid
+        & outchan_1_source = from & outchan_1_dest = to
+        : op_invalid;
+      TRUE: outchan_1_op;
+    esac;
+    
+  next(outchan_1_source):=
+    case
+      outchan_1_valid & !inchan_1_valid
+        & outchan_1_op != op_invalid & inchan_1_op = op_invalid
+        & outchan_1_source = from & outchan_1_dest = to
+        : 0;
+      TRUE: outchan_1_source;
+    esac;
+    
+  next(outchan_1_dest):=
+    case
+      outchan_1_valid & !inchan_1_valid
+        & outchan_1_op != op_invalid & inchan_1_op = op_invalid
+        & outchan_1_source = from & outchan_1_dest = to
+        : 0;
+      TRUE: outchan_1_dest;
+    esac;
+    
+-----------------------------------------------------------------------------
+--Node[to] receive message from Node[from];
+--channel[1];
+  next(inchan_1_valid):=
+    case
+      outchan_1_valid & !inchan_1_valid
+        & outchan_1_op != op_invalid & inchan_1_op = op_invalid
+        & outchan_1_source = from & outchan_1_dest = to
+        : TRUE;
+      TRUE: inchan_1_valid;
+    esac;  
+
+  next(inchan_1_source):=
+    case
+      outchan_1_valid & !inchan_1_valid
+        & outchan_1_op != op_invalid & inchan_1_op = op_invalid
+        & outchan_1_source = from & outchan_1_dest = to
+        : outchan_1_source;
+      TRUE: inchan_1_source;
+    esac;  
+
+  next(inchan_1_dest):=
+    case
+      outchan_1_valid & !inchan_1_valid
+        & outchan_1_op != op_invalid & inchan_1_op = op_invalid
+        & outchan_1_source = from & outchan_1_dest = to
+        : outchan_1_dest;
+      TRUE: inchan_1_dest;
+    esac;  
+
+  next(inchan_1_op):=
+    case
+      outchan_1_valid & !inchan_1_valid
+        & outchan_1_op != op_invalid & inchan_1_op = op_invalid
+        & outchan_1_source = from & outchan_1_dest = to
+        : outchan_1_op;
+      TRUE: inchan_1_op;
+    esac;  
+
+  next(inchan_1_data):=
+    case
+      outchan_1_valid & !inchan_1_valid
+        & outchan_1_op != op_invalid & inchan_1_op = op_invalid
+        & outchan_1_source = from & outchan_1_dest = to
+        : outchan_1_data;
+      TRUE: inchan_1_data;
+    esac;  
+
+    
+
+-----------------------------------------------------------------------------
+MODULE channel_2(from, to, 
+outchan_2_valid, outchan_2_source, outchan_2_dest, outchan_2_op, outchan_2_data,
+inchan_2_valid, inchan_2_source, inchan_2_dest, inchan_2_op, inchan_2_data)
+
+ASSIGN
+-----------------------------------------------------------------------------
+--Node[from] send message to Node[to];
+
+  next(outchan_2_valid):=
+    case
+      outchan_2_valid & !inchan_2_valid
+        & outchan_2_op != op_invalid & inchan_2_op = op_invalid
+        & outchan_2_source = from & outchan_2_dest = to
+        : FALSE;
+      TRUE: outchan_2_valid;
+    esac;
+     
+  next(outchan_2_op):=
+    case
+      outchan_2_valid & !inchan_2_valid
+        & outchan_2_op != op_invalid & inchan_2_op = op_invalid
+        & outchan_2_source = from & outchan_2_dest = to
+        : op_invalid;
+      TRUE: outchan_2_op;
+    esac;
+     
+  next(outchan_2_source):=
+    case
+      outchan_2_valid & !inchan_2_valid
+        & outchan_2_op != op_invalid & inchan_2_op = op_invalid
+        & outchan_2_source = from & outchan_2_dest = to
+        : 0;
+      TRUE: outchan_2_source;
+    esac;
+     
+  next(outchan_2_dest):=
+    case
+      outchan_2_valid & !inchan_2_valid
+        & outchan_2_op != op_invalid & inchan_2_op = op_invalid
+        & outchan_2_source = from & outchan_2_dest = to
+        : 0;
+      TRUE: outchan_2_dest;
+    esac;
+     
+-----------------------------------------------------------------------------
+--Node[to] receive message from Node[from];
+--channel[2];
+  next(inchan_2_valid):=
+    case
+      outchan_2_valid & !inchan_2_valid
+        & outchan_2_op != op_invalid & inchan_2_op = op_invalid
+        & outchan_2_source = from & outchan_2_dest = to
+        : TRUE;
+      TRUE: inchan_2_valid;
+    esac;  
+
+  next(inchan_2_source):=
+    case
+      outchan_2_valid & !inchan_2_valid
+        & outchan_2_op != op_invalid & inchan_2_op = op_invalid
+        & outchan_2_source = from & outchan_2_dest = to
+        : outchan_2_source;
+      TRUE: inchan_2_source;
+    esac;  
+
+  next(inchan_2_dest):=
+    case
+      outchan_2_valid & !inchan_2_valid
+        & outchan_2_op != op_invalid & inchan_2_op = op_invalid
+        & outchan_2_source = from & outchan_2_dest = to
+        : outchan_2_dest;
+      TRUE: inchan_2_dest;
+    esac;  
+
+  next(inchan_2_op):=
+    case
+      outchan_2_valid & !inchan_2_valid
+        & outchan_2_op != op_invalid & inchan_2_op = op_invalid
+        & outchan_2_source = from & outchan_2_dest = to
+        : outchan_2_op;
+      TRUE: inchan_2_op;
+    esac;  
+
+  next(inchan_2_data):=
+    case
+      outchan_2_valid & !inchan_2_valid
+        & outchan_2_op != op_invalid & inchan_2_op = op_invalid
+        & outchan_2_source = from & outchan_2_dest = to
+        : outchan_2_data;
+      TRUE: inchan_2_data;
+    esac;  
+
+-----------------------------------------------------------------------------
+MODULE channel_3(from, to, 
+outchan_3_valid, outchan_3_source, outchan_3_dest, outchan_3_op, outchan_3_data,
+inchan_3_valid, inchan_3_source, inchan_3_dest, inchan_3_op, inchan_3_data)
+
+ASSIGN
+-----------------------------------------------------------------------------
+--Node[from] send message to Node[to];
+
+  next(outchan_3_valid):=
+    case
+      outchan_3_valid & !inchan_3_valid
+        & outchan_3_op != op_invalid & inchan_3_op = op_invalid
+        & outchan_3_source = from & outchan_3_dest = to
+        : FALSE;
+      TRUE: outchan_3_valid;
+    esac; 
+
+  next(outchan_3_op):=
+    case
+      outchan_3_valid & !inchan_3_valid
+        & outchan_3_op != op_invalid & inchan_3_op = op_invalid
+        & outchan_3_source = from & outchan_3_dest = to
+        : op_invalid;
+      TRUE: outchan_3_op;
+    esac; 
+
+  next(outchan_3_source):=
+    case
+      outchan_3_valid & !inchan_3_valid
+        & outchan_3_op != op_invalid & inchan_3_op = op_invalid
+        & outchan_3_source = from & outchan_3_dest = to
+        : 0;
+      TRUE: outchan_3_source;
+    esac; 
+
+  next(outchan_3_dest):=
+    case
+      outchan_3_valid & !inchan_3_valid
+        & outchan_3_op != op_invalid & inchan_3_op = op_invalid
+        & outchan_3_source = from & outchan_3_dest = to
+        : 0;
+      TRUE: outchan_3_dest;
+    esac; 
+-----------------------------------------------------------------------------
+--Node[to] receive message from Node[from];
+--channel[3];
+  next(inchan_3_valid):=
+    case
+      outchan_3_valid & !inchan_3_valid
+        & outchan_3_op != op_invalid & inchan_3_op = op_invalid
+        & outchan_3_source = from & outchan_3_dest = to
+        : TRUE;
+      TRUE: inchan_3_valid;
+    esac;  
+
+  next(inchan_3_source):=
+    case
+      outchan_3_valid & !inchan_3_valid
+        & outchan_3_op != op_invalid & inchan_3_op = op_invalid
+        & outchan_3_source = from & outchan_3_dest = to
+        : outchan_3_source;
+      TRUE: inchan_3_source;
+    esac;  
+
+  next(inchan_3_dest):=
+    case
+      outchan_3_valid & !inchan_3_valid
+        & outchan_3_op != op_invalid & inchan_3_op = op_invalid
+        & outchan_3_source = from & outchan_3_dest = to
+        : outchan_3_dest;
+      TRUE: inchan_3_dest;
+    esac;  
+
+  next(inchan_3_op):=
+    case
+      outchan_3_valid & !inchan_3_valid
+        & outchan_3_op != op_invalid & inchan_3_op = op_invalid
+        & outchan_3_source = from & outchan_3_dest = to
+        : outchan_3_op;
+      TRUE: inchan_3_op;
+    esac;  
+
+  next(inchan_3_data):=
+    case
+      outchan_3_valid & !inchan_3_valid
+        & outchan_3_op != op_invalid & inchan_3_op = op_invalid
+        & outchan_3_source = from & outchan_3_dest = to
+        : outchan_3_data;
+      TRUE: inchan_3_data;
+    esac;  
+
+-----------------------------------------------------------------------------

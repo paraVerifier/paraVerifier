@@ -4,7 +4,7 @@
 (* Raises when there are some errors in the NuSMV code *)
 exception Protocol_name_not_set
 
-val set_context : ?escape:(string -> string) -> string -> string -> int
+val set_context : ?escape:(string -> string) -> ?smv_ord:string -> string -> string -> int
 
 (** Judge if a given invariant is true invariant
 

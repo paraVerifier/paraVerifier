@@ -1018,15 +1018,15 @@ let result_to_str (cinvs, relations) =
     @return causal relation table
 *)
 let find ?(insym_types=[]) ?(smv_escape=(fun inv_str -> inv_str))
-    ?(smv="") ?(smv_bmc="") ?(murphi="") protocol =
+    ?(smv="") ?(smv_ord="") ?(smv_bmc="") ?(murphi="") protocol =
   let {name; types; vardefs; init; rules; properties} = Loach.Trans.act ~loach:protocol in
   let _smt_context = Smt.set_context name (ToStr.Smt2.context_of ~insym_types ~types ~vardefs) in
   let _mu_context = Murphi.set_context name murphi in
-  let _smv_bmc_context =
+  (*let _smv_bmc_context =
     if smv_bmc = "" then
       SmvBmc.set_context name (Loach.ToSmv.protocol_act ~limit_param:false protocol)
     else begin SmvBmc.set_context name smv_bmc end
-  in
+  in*)
   type_defs := types;
   protocol_name := name;
   cache_vars_of_rules rules;
@@ -1045,8 +1045,9 @@ let find ?(insym_types=[]) ?(smv_escape=(fun inv_str -> inv_str))
   let _smv_context =
     if List.is_empty cinvs then 0
     else begin
-      if smv = "" then Smv.set_context ~escape:smv_escape name (Loach.ToSmv.protocol_act protocol)
-      else begin Smv.set_context ~escape:smv_escape name smv end
+      if smv = "" then
+        Smv.set_context ~escape:smv_escape name (Loach.ToSmv.protocol_act protocol) ~smv_ord
+      else begin Smv.set_context ~escape:smv_escape name smv ~smv_ord end
     end
   in
   let get_rulename_param_pair r =

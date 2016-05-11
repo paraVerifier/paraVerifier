@@ -695,7 +695,7 @@ class Invariant(object):
 
     def inv_alone(self, text, consts):
         # TODO problems exist here
-        pattern = r'[^do]+\s+invariant\s*\"(.*?)\"\s*(.*?)\s*;{0,1}'
+        pattern = r'[^do]+\s+invariant\s*?\"(.*?)\"\s*?(.*?)\s*?;'
         inv_strs = re.findall(pattern, text, re.S)
         invs = []
         names = []

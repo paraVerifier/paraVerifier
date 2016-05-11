@@ -35,8 +35,8 @@ let types = [
   enum "request_opcode" [_req_read_shared; _req_read_exclusive; _req_req_upgrade];
   enum "cache_state" [_cache_invalid; _cache_shared; _cache_exclusive];
   enum "status_type" [_inactive; _pending; _completed];
-  enum "addr_type" (int_consts [0; 1]);
-  enum "num_data_type" (int_consts [0; ]);
+  enum "addr_type" (int_consts [0]);
+  enum "num_data_type" (int_consts [0]);
   enum "node_id" (int_consts [0; 1; 2; 3]);
   enum "channel_id" (int_consts [1; 2; 3]);
   enum "boolean" [_True; _False];
@@ -267,6 +267,23 @@ let () = run_with_cmdline (fun () ->
   let protocol = preprocess_rule_guard ~loach:protocol in
   let cinvs_with_varnames, relations = find protocol
     ~murphi:(In_channel.read_all "n_german2004Lyj.m")
+    ~smv:(In_channel.read_all "german2k4n.smv")
+    ~smv_ord:(In_channel.read_all "german2k4n.ord")
+    ~smv_escape:(fun inv_str ->
+      let replace s d =
+        Re2.Regex.rewrite_exn (Re2.Regex.of_string s) ~template:d
+      in
+      inv_str
+      |> replace "node\\[0\\].directory\\[0\\]" "directory"
+      |> replace "node.memory\\[0\\].values\\[0\\]" "memory"
+      |> replace "auxdata\\[0\\].values\\[0\\]" "auxdata"
+      |> replace "node" "Node"
+      |> replace "cache\\[0\\]" "cache"
+      |> replace "data.values\\[0\\]" "data"
+      |> replace "local_requests\\[0\\]" "local_requests"
+      |> replace "remote_requests\\[0\\]" "remote_requests"
+      |> replace "home_requests\\[0\\]" "home_requests"
+    )
   in
   Isabelle.protocol_act protocol cinvs_with_varnames relations ()
 )

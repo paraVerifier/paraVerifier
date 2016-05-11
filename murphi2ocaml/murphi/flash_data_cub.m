@@ -1367,6 +1367,11 @@ invariant "CacheStatePropHome"
     !(Sta.Proc[p].CacheState = CACHE_E & Sta.HomeProc.CacheState = CACHE_E)
   end;
 
+invariant "DataProp"
+  forall p: NODE do
+    (Sta.Proc[p].CacheState = CACHE_E -> Sta.Proc[p].CacheData = Sta.CurrData)
+  end;
+
 invariant "MemDataProp"
   !Sta.Dir.Dirty -> Sta.MemData = Sta.CurrData;
 

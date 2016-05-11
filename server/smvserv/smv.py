@@ -11,10 +11,11 @@ import re
 from pexpect import spawn, EOF, TIMEOUT
 
 class SMV(object):
-    def __init__(self, smv_path, smv_file, timeout=None):
+    def __init__(self, smv_path, smv_file, ord_file, timeout=None):
         super(SMV, self).__init__()
         self.smv_path = smv_path
-        self.process = spawn(smv_path + ' -dcx -int -old ' + smv_file)
+        ord_switch = " -i %s" % ord_file if ord_file else ""
+        self.process = spawn(smv_path + ' -dcx -int -old ' + smv_file + ord_switch)
         self.timeout = timeout
         self.diameter = None
         self.isComputing = False

@@ -96,8 +96,10 @@ module Smv = struct
 
   let port = ref 50008
   
-  let compute_reachable name content =
-    let (status, _) = request COMPUTE_REACHABLE (sprintf "%s,%s" name content) (!host) (!port) in
+  let compute_reachable ?(smv_ord="") name content =
+    let (status, _) =
+      request COMPUTE_REACHABLE (sprintf "%s,%s,%s" name content smv_ord) (!host) (!port)
+    in
     status = OK
 
   let query_reachable name =
