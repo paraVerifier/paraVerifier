@@ -735,9 +735,35 @@ module PartParam = struct
       | _ -> raise Empty_exception
     in
     match c with
-    | Strc(x) -> sprintf "%s[%s]" name x
-    | Intc(x) -> sprintf "%s[%d]" name x
-    | Boolc(x) -> sprintf "%s[%b]" name x
+    | Strc(x) -> sprintf "%s_%s" name x
+    | Intc(x) -> sprintf "%s_%d" name x
+    | Boolc(x) -> sprintf "%s_%b" name x
+
+  let apply_vardef vd ~insym_types ~types =
+    let Arrdef(ls, tname) = vd in
+    let rec wrapper head tail =
+      match tail with
+      | [] -> head
+      | (name, pds)::tail' ->
+        let insym_pds, sym_pds = List.partition_tf pds ~f:(fun (Paramdef(_, tn)) ->
+          List.exists insym_types ~f:(fun t -> t = tn)
+        ) in
+        let ps = cart_product_with_paramfix insym_pds types in
+        if ps = [] then
+          let head' = List.map head ~f:(fun x -> x@[(name, pds)]) in
+          wrapper head' tail'
+        else begin
+          let head' = List.concat (List.map head ~f:(fun x ->
+            List.map ps ~f:(fun pfs ->
+              let name' = List.fold pfs ~init:name ~f:attach in
+              x@[(name', sym_pds)]
+            )
+          )) in
+          wrapper head' tail'
+        end
+    in
+    List.map (wrapper [[]] ls) ~f:(fun x -> arrdef x tname)
+
 
   let attach_list name pfs =
     List.fold pfs ~init:name ~f:attach
@@ -785,15 +811,33 @@ module PartParam = struct
     | ForallFormula(paramdefs, form) -> forallFormula paramdefs (apply_form form ~p)
     | ExistFormula(paramdefs, form) -> existFormula paramdefs (apply_form form ~p)
 
-  let rec apply_statement statement ~p =
+  let rec apply_statement statement ~insym_types ~p ~types =
     match statement with
     | Assign(v, e) -> assign (apply_array v ~p) (apply_exp e ~p)
-    | Parallel(sl) -> parallel (List.map sl ~f:(apply_statement ~p))
-    | IfStatement(f, s) -> ifStatement (apply_form f ~p) (apply_statement s ~p)
+    | Parallel(sl) -> parallel (List.map sl ~f:(apply_statement ~insym_types ~p ~types))
+    | IfStatement(f, s) -> ifStatement (apply_form f ~p) (apply_statement ~insym_types s ~p ~types)
     | IfelseStatement(f, s1, s2) ->
-      ifelseStatement (apply_form f ~p) (apply_statement s1 ~p) (apply_statement s2 ~p)
+      ifelseStatement (apply_form f ~p) (
+        apply_statement ~insym_types s1 ~p ~types
+      ) (
+        apply_statement s2 ~insym_types ~p ~types
+      )
     | ForStatement(s, pd) ->
-      forStatement (apply_statement s ~p) pd
+      let insym_pds, sym_pds = List.partition_tf pd ~f:(fun (Paramdef(_, tn)) ->
+        List.exists insym_types ~f:(fun t -> t = tn)
+      ) in
+      let ps = cart_product_with_paramfix insym_pds types in
+      if ps = [] then
+        forStatement (apply_statement s ~insym_types ~p:[] ~types) pd
+      else begin
+        parallel (List.map ps ~f:(fun p' ->
+          if sym_pds = [] then
+            apply_statement s ~insym_types ~p:(p@p') ~types
+          else begin
+            forStatement (apply_statement s ~insym_types ~p:(p@p') ~types) sym_pds
+          end
+        ))
+      end
 
   let apply_rule r insym_types ~types =
     let Rule(n, paramdefs, f, s) = r in
@@ -818,9 +862,13 @@ module PartParam = struct
         sprintf "%s_%s" n (String.concat ~sep:"_" (List.map p ~f:paramref_act))
       end
     in
-    List.map ps ~f:(fun p ->
-      rule (name p) sym_pds (apply_form f ~p) (apply_statement s ~p)
-    )
+    if ps = [] then
+      [rule n paramdefs f (apply_statement s ~insym_types ~p:[] ~types)]
+    else begin
+      List.map ps ~f:(fun p ->
+        rule (name p) sym_pds (apply_form f ~p) (apply_statement s ~insym_types ~p ~types)
+      )
+    end
 
   let apply_prop property insym_types ~types =
     let Prop(name, paramdefs, f) = property in
@@ -828,12 +876,18 @@ module PartParam = struct
       List.exists insym_types ~f:(fun t -> t = tn)
     ) in
     let ps = cart_product_with_paramfix insym_pds types in
-    List.map ps ~f:(fun p ->
-      prop name sym_pds (apply_form f ~p)
-    )
+    if ps = [] then
+      [property]
+    else begin
+      List.map ps ~f:(fun p ->
+        prop name sym_pds (apply_form f ~p)
+      )
+    end
 
   let apply_protocol insym_types protocol =
     let {name; types; vardefs; init; rules; properties} = protocol in
+    let vardefs = List.concat (List.map vardefs ~f:(apply_vardef ~insym_types ~types)) in
+    let init = apply_statement init ~insym_types ~p:[] ~types in
     let rules = List.concat (List.map rules ~f:(fun r -> apply_rule r insym_types ~types)) in
     let properties =
       List.map properties ~f:(fun property -> apply_prop property insym_types ~types)
