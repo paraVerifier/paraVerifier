@@ -58,7 +58,7 @@ let str_to_request_type str =
   | "6" -> QUERY_STAND_SMT2
   | "8" -> SET_MU_CONTEXT
   | "9" -> CHECK_INV_BY_MU
-  | _ -> Prt.error str; raise Empty_exception
+  | _ -> Prt.error (sprintf "error return code from server: %s" str); raise Empty_exception
 
 let make_request str host port =
   let sock = Unix.socket ~domain:UnixLabels.PF_INET ~kind:UnixLabels.SOCK_STREAM ~protocol:0 in

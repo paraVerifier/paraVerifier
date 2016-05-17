@@ -199,15 +199,39 @@ let protocol = {
   rules;
   properties;
 }
-
+(*
 let () = run_with_cmdline (fun () ->
-  let insym_types = ["addr_type"; "num_data_type"; "channel_id"] in
+  let insym_types = ["channel_id", "num_data_type", "addr_type"] in
   let protocol = PartParam.apply_protocol insym_types protocol in
   let protocol = preprocess_rule_guard ~loach:protocol in
   let cinvs_with_varnames, relations = find protocol
     ~insym_types
     ~murphi:(In_channel.read_all "n_german2004.m")
+    ~smv:(In_channel.read_all "german2k4n.smv")
+    ~smv_ord:(In_channel.read_all "german2k4n.ord")
+    ~smv_escape:(fun inv_str ->
+      let replace s d =
+        Re2.Regex.rewrite_exn (Re2.Regex.of_string s) ~template:d
+      in
+      inv_str
+      |> replace "node\\[0\\].directory\\[0\\]" "directory"
+      |> replace "node.memory\\[0\\].values\\[0\\]" "memory"
+      |> replace "auxdata\\[0\\].values\\[0\\]" "auxdata"
+      |> replace "node" "Node"
+      |> replace "cache\\[0\\]" "cache"
+      |> replace "data.values\\[0\\]" "data"
+      |> replace "local_requests\\[0\\]" "local_requests"
+      |> replace "remote_requests\\[0\\]" "remote_requests"
+      |> replace "home_requests\\[0\\]" "home_requests"
+      |> replace "chan\\[1\\]" "chan1"
+      |> replace "chan\\[2\\]" "chan2"
+      |> replace "chan\\[3\\]" "chan3"
+    )
   in
   Isabelle.protocol_act protocol cinvs_with_varnames relations ()
 )
+*)
 
+let insym_types = ["channel_id"; "num_data_type"; "addr_type"] in
+let protocol = PartParam.apply_protocol insym_types protocol in
+printf "%s\n\n\n" (ToMurphi.protocol_act protocol);;

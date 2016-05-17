@@ -15,7 +15,7 @@ class SMV(object):
         super(SMV, self).__init__()
         self.smv_path = smv_path
         ord_switch = " -i %s" % ord_file if ord_file else ""
-        self.process = spawn(smv_path + ' -dcx -int -old ' + smv_file + ord_switch)
+        self.process = spawn(smv_path + ord_switch + ' -dcx -int -old ' + smv_file)
         self.timeout = timeout
         self.diameter = None
         self.isComputing = False
