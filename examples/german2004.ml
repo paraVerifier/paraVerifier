@@ -201,7 +201,7 @@ let protocol = {
 }
 (*
 let () = run_with_cmdline (fun () ->
-  let insym_types = ["channel_id", "num_data_type", "addr_type"] in
+  let insym_types = ["channel_id"; "num_data_type"; "addr_type"] in
   let protocol = PartParam.apply_protocol insym_types protocol in
   let protocol = preprocess_rule_guard ~loach:protocol in
   let cinvs_with_varnames, relations = find protocol

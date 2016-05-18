@@ -739,6 +739,9 @@ module PartParam = struct
     | Intc(x) -> sprintf "%s_%d" name x
     | Boolc(x) -> sprintf "%s_%b" name x
 
+  let attach_list name pfs =
+    List.fold pfs ~init:name ~f:attach
+
   let apply_vardef vd ~insym_types ~types =
     let Arrdef(ls, tname) = vd in
     let rec wrapper head tail =
@@ -764,9 +767,6 @@ module PartParam = struct
     in
     List.map (wrapper [[]] ls) ~f:(fun x -> arrdef x tname)
 
-
-  let attach_list name pfs =
-    List.fold pfs ~init:name ~f:attach
 
   let apply_paramref pr ~p =
     match pr with
@@ -828,7 +828,7 @@ module PartParam = struct
       ) in
       let ps = cart_product_with_paramfix insym_pds types in
       if ps = [] then
-        forStatement (apply_statement s ~insym_types ~p:[] ~types) pd
+        forStatement (apply_statement s ~insym_types ~p ~types) pd
       else begin
         parallel (List.map ps ~f:(fun p' ->
           if sym_pds = [] then

@@ -97,16 +97,16 @@ let gen_var_str trees =
   ) in
   let rec wrapper tree =
     match tree with
-    | Node(name, pds, [], tname) -> sprintf "%s : %s %s" name (get_arr_of pds) tname
+    | Node(name, pds, [], tname) -> sprintf "%s : %s %s;" name (get_arr_of pds) tname
     | Node(name, pds, nodes, _) ->
       begin
         let key = get_type_id nodes in
         match Hashtbl.find record_table key with
-        | Some(record_name) -> sprintf "%s : %s %s" name (get_arr_of pds) record_name
+        | Some(record_name) -> sprintf "%s : %s %s;" name (get_arr_of pds) record_name
         | None ->
           let sub_items = List.map nodes ~f:wrapper in
           let record_name = sprintf "record_%d" (Hashtbl.length record_table) in
-          let record_body = String.concat ~sep:";\n" sub_items in
+          let record_body = String.concat ~sep:"\n" sub_items in
           let record_str = sprintf "%s : record\n%s\nend;" record_name record_body in
           records := (!records)@[record_str];
           Hashtbl.replace record_table ~key ~data:record_name;
