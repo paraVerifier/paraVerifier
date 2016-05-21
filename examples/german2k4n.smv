@@ -7,6 +7,7 @@ MODULE message
 VAR
   source: 0..3;
   dest:   0..3;
+  addr: 0..0;
   op:     {op_invalid,read_shared,read_exclusive,req_upgrade,invalidate,invalidate_ack,grant_shared,grant_upgrade,grant_exclusive};
   data:   boolean;  
 

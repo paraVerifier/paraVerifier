@@ -321,7 +321,7 @@ let minify_inv_inc inv =
           print_endline (sprintf "Check by mu: %s, %b" form_str res); res
         in
         if List.is_empty over then
-          try Smv.is_inv (ToStr.Smv.form_act (neg piece)) with
+          try Smv.is_inv (ToStr.Smv.form_act (neg piece)) && check_with_murphi piece with
           | Client.Smv.Cannot_check -> check_with_murphi piece
           | _ -> raise Empty_exception
         else begin
