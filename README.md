@@ -74,9 +74,9 @@ We have applied ParaVerifier to a number of benchmarks:
 | MESI | 3 | 3 | 3.33 | 148 | [MESI thy](https://github.com/paraVerifier/paraVerifier/tree/master/proof_scripts/mesi) |
 | MOESI | 5 | 3 | 3.34 | 147 | [MOESI thy](https://github.com/paraVerifier/paraVerifier/tree/master/proof_scripts/moesi) |
 | Germanish | 6 | 3 | 3.47 | 147 | [Germanish thy](https://github.com/paraVerifier/paraVerifier/tree/master/proof_scripts/germanish) |
-| German 2000 | 13 | 52 | 48.20 | 158 | [German 2000 thy](https://github.com/paraVerifier/paraVerifier/tree/master/proof_scripts/german2000) |
+| German 2000 | 13 | 52 | 48.20 | 158 | [German 2000 thy](https://github.com/paraVerifier/paraVerifier/tree/master/proof_scripts/german) |
 | Flash* | 60 | 152 | 325.60 | 178 | [Flash* thy](https://github.com/paraVerifier/paraVerifier/tree/master/proof_scripts/flash_without_data) |
-| Flash | 62 | 162 | 589.23 | 178 | [Flash thy](https://github.com/paraVerifier/paraVerifier/tree/master/proof_scripts/flash_data) |
+| Flash | 62 | 162 | 589.23 | 178 | [Flash thy](https://github.com/paraVerifier/paraVerifier/tree/master/proof_scripts/flash) |
 
 <small>\* the version of flash without data property.</small>
 

@@ -1,0 +1,667 @@
+session paraTheory_Session = HOL +
+    theories
+        paraTheory
+
+session n_flash_base_Session = paraTheory_Session +
+    theories
+        n_flash_base
+
+session n_flash_lemma_on_inv__1_Session = n_flash_base_Session +
+    theories
+        n_flash_lemma_inv__1_on_rules
+
+session n_flash_lemma_on_inv__2_Session = n_flash_lemma_on_inv__1_Session +
+    theories
+        n_flash_lemma_inv__2_on_rules
+
+session n_flash_lemma_on_inv__3_Session = n_flash_lemma_on_inv__2_Session +
+    theories
+        n_flash_lemma_inv__3_on_rules
+
+session n_flash_lemma_on_inv__4_Session = n_flash_lemma_on_inv__3_Session +
+    theories
+        n_flash_lemma_inv__4_on_rules
+
+session n_flash_lemma_on_inv__5_Session = n_flash_lemma_on_inv__4_Session +
+    theories
+        n_flash_lemma_inv__5_on_rules
+
+session n_flash_lemma_on_inv__6_Session = n_flash_lemma_on_inv__5_Session +
+    theories
+        n_flash_lemma_inv__6_on_rules
+
+session n_flash_lemma_on_inv__7_Session = n_flash_lemma_on_inv__6_Session +
+    theories
+        n_flash_lemma_inv__7_on_rules
+
+session n_flash_lemma_on_inv__8_Session = n_flash_lemma_on_inv__7_Session +
+    theories
+        n_flash_lemma_inv__8_on_rules
+
+session n_flash_lemma_on_inv__9_Session = n_flash_lemma_on_inv__8_Session +
+    theories
+        n_flash_lemma_inv__9_on_rules
+
+session n_flash_lemma_on_inv__10_Session = n_flash_lemma_on_inv__9_Session +
+    theories
+        n_flash_lemma_inv__10_on_rules
+
+session n_flash_lemma_on_inv__11_Session = n_flash_lemma_on_inv__10_Session +
+    theories
+        n_flash_lemma_inv__11_on_rules
+
+session n_flash_lemma_on_inv__12_Session = n_flash_lemma_on_inv__11_Session +
+    theories
+        n_flash_lemma_inv__12_on_rules
+
+session n_flash_lemma_on_inv__13_Session = n_flash_lemma_on_inv__12_Session +
+    theories
+        n_flash_lemma_inv__13_on_rules
+
+session n_flash_lemma_on_inv__14_Session = n_flash_lemma_on_inv__13_Session +
+    theories
+        n_flash_lemma_inv__14_on_rules
+
+session n_flash_lemma_on_inv__15_Session = n_flash_lemma_on_inv__14_Session +
+    theories
+        n_flash_lemma_inv__15_on_rules
+
+session n_flash_lemma_on_inv__16_Session = n_flash_lemma_on_inv__15_Session +
+    theories
+        n_flash_lemma_inv__16_on_rules
+
+session n_flash_lemma_on_inv__17_Session = n_flash_lemma_on_inv__16_Session +
+    theories
+        n_flash_lemma_inv__17_on_rules
+
+session n_flash_lemma_on_inv__18_Session = n_flash_lemma_on_inv__17_Session +
+    theories
+        n_flash_lemma_inv__18_on_rules
+
+session n_flash_lemma_on_inv__19_Session = n_flash_lemma_on_inv__18_Session +
+    theories
+        n_flash_lemma_inv__19_on_rules
+
+session n_flash_lemma_on_inv__20_Session = n_flash_lemma_on_inv__19_Session +
+    theories
+        n_flash_lemma_inv__20_on_rules
+
+session n_flash_lemma_on_inv__21_Session = n_flash_lemma_on_inv__20_Session +
+    theories
+        n_flash_lemma_inv__21_on_rules
+
+session n_flash_lemma_on_inv__22_Session = n_flash_lemma_on_inv__21_Session +
+    theories
+        n_flash_lemma_inv__22_on_rules
+
+session n_flash_lemma_on_inv__23_Session = n_flash_lemma_on_inv__22_Session +
+    theories
+        n_flash_lemma_inv__23_on_rules
+
+session n_flash_lemma_on_inv__24_Session = n_flash_lemma_on_inv__23_Session +
+    theories
+        n_flash_lemma_inv__24_on_rules
+
+session n_flash_lemma_on_inv__25_Session = n_flash_lemma_on_inv__24_Session +
+    theories
+        n_flash_lemma_inv__25_on_rules
+
+session n_flash_lemma_on_inv__26_Session = n_flash_lemma_on_inv__25_Session +
+    theories
+        n_flash_lemma_inv__26_on_rules
+
+session n_flash_lemma_on_inv__27_Session = n_flash_lemma_on_inv__26_Session +
+    theories
+        n_flash_lemma_inv__27_on_rules
+
+session n_flash_lemma_on_inv__28_Session = n_flash_lemma_on_inv__27_Session +
+    theories
+        n_flash_lemma_inv__28_on_rules
+
+session n_flash_lemma_on_inv__29_Session = n_flash_lemma_on_inv__28_Session +
+    theories
+        n_flash_lemma_inv__29_on_rules
+
+session n_flash_lemma_on_inv__30_Session = n_flash_lemma_on_inv__29_Session +
+    theories
+        n_flash_lemma_inv__30_on_rules
+
+session n_flash_lemma_on_inv__31_Session = n_flash_lemma_on_inv__30_Session +
+    theories
+        n_flash_lemma_inv__31_on_rules
+
+session n_flash_lemma_on_inv__32_Session = n_flash_lemma_on_inv__31_Session +
+    theories
+        n_flash_lemma_inv__32_on_rules
+
+session n_flash_lemma_on_inv__33_Session = n_flash_lemma_on_inv__32_Session +
+    theories
+        n_flash_lemma_inv__33_on_rules
+
+session n_flash_lemma_on_inv__34_Session = n_flash_lemma_on_inv__33_Session +
+    theories
+        n_flash_lemma_inv__34_on_rules
+
+session n_flash_lemma_on_inv__35_Session = n_flash_lemma_on_inv__34_Session +
+    theories
+        n_flash_lemma_inv__35_on_rules
+
+session n_flash_lemma_on_inv__36_Session = n_flash_lemma_on_inv__35_Session +
+    theories
+        n_flash_lemma_inv__36_on_rules
+
+session n_flash_lemma_on_inv__37_Session = n_flash_lemma_on_inv__36_Session +
+    theories
+        n_flash_lemma_inv__37_on_rules
+
+session n_flash_lemma_on_inv__38_Session = n_flash_lemma_on_inv__37_Session +
+    theories
+        n_flash_lemma_inv__38_on_rules
+
+session n_flash_lemma_on_inv__39_Session = n_flash_lemma_on_inv__38_Session +
+    theories
+        n_flash_lemma_inv__39_on_rules
+
+session n_flash_lemma_on_inv__40_Session = n_flash_lemma_on_inv__39_Session +
+    theories
+        n_flash_lemma_inv__40_on_rules
+
+session n_flash_lemma_on_inv__41_Session = n_flash_lemma_on_inv__40_Session +
+    theories
+        n_flash_lemma_inv__41_on_rules
+
+session n_flash_lemma_on_inv__42_Session = n_flash_lemma_on_inv__41_Session +
+    theories
+        n_flash_lemma_inv__42_on_rules
+
+session n_flash_lemma_on_inv__43_Session = n_flash_lemma_on_inv__42_Session +
+    theories
+        n_flash_lemma_inv__43_on_rules
+
+session n_flash_lemma_on_inv__44_Session = n_flash_lemma_on_inv__43_Session +
+    theories
+        n_flash_lemma_inv__44_on_rules
+
+session n_flash_lemma_on_inv__45_Session = n_flash_lemma_on_inv__44_Session +
+    theories
+        n_flash_lemma_inv__45_on_rules
+
+session n_flash_lemma_on_inv__46_Session = n_flash_lemma_on_inv__45_Session +
+    theories
+        n_flash_lemma_inv__46_on_rules
+
+session n_flash_lemma_on_inv__47_Session = n_flash_lemma_on_inv__46_Session +
+    theories
+        n_flash_lemma_inv__47_on_rules
+
+session n_flash_lemma_on_inv__48_Session = n_flash_lemma_on_inv__47_Session +
+    theories
+        n_flash_lemma_inv__48_on_rules
+
+session n_flash_lemma_on_inv__49_Session = n_flash_lemma_on_inv__48_Session +
+    theories
+        n_flash_lemma_inv__49_on_rules
+
+session n_flash_lemma_on_inv__50_Session = n_flash_lemma_on_inv__49_Session +
+    theories
+        n_flash_lemma_inv__50_on_rules
+
+session n_flash_lemma_on_inv__51_Session = n_flash_lemma_on_inv__50_Session +
+    theories
+        n_flash_lemma_inv__51_on_rules
+
+session n_flash_lemma_on_inv__52_Session = n_flash_lemma_on_inv__51_Session +
+    theories
+        n_flash_lemma_inv__52_on_rules
+
+session n_flash_lemma_on_inv__53_Session = n_flash_lemma_on_inv__52_Session +
+    theories
+        n_flash_lemma_inv__53_on_rules
+
+session n_flash_lemma_on_inv__54_Session = n_flash_lemma_on_inv__53_Session +
+    theories
+        n_flash_lemma_inv__54_on_rules
+
+session n_flash_lemma_on_inv__55_Session = n_flash_lemma_on_inv__54_Session +
+    theories
+        n_flash_lemma_inv__55_on_rules
+
+session n_flash_lemma_on_inv__56_Session = n_flash_lemma_on_inv__55_Session +
+    theories
+        n_flash_lemma_inv__56_on_rules
+
+session n_flash_lemma_on_inv__57_Session = n_flash_lemma_on_inv__56_Session +
+    theories
+        n_flash_lemma_inv__57_on_rules
+
+session n_flash_lemma_on_inv__58_Session = n_flash_lemma_on_inv__57_Session +
+    theories
+        n_flash_lemma_inv__58_on_rules
+
+session n_flash_lemma_on_inv__59_Session = n_flash_lemma_on_inv__58_Session +
+    theories
+        n_flash_lemma_inv__59_on_rules
+
+session n_flash_lemma_on_inv__60_Session = n_flash_lemma_on_inv__59_Session +
+    theories
+        n_flash_lemma_inv__60_on_rules
+
+session n_flash_lemma_on_inv__61_Session = n_flash_lemma_on_inv__60_Session +
+    theories
+        n_flash_lemma_inv__61_on_rules
+
+session n_flash_lemma_on_inv__62_Session = n_flash_lemma_on_inv__61_Session +
+    theories
+        n_flash_lemma_inv__62_on_rules
+
+session n_flash_lemma_on_inv__63_Session = n_flash_lemma_on_inv__62_Session +
+    theories
+        n_flash_lemma_inv__63_on_rules
+
+session n_flash_lemma_on_inv__64_Session = n_flash_lemma_on_inv__63_Session +
+    theories
+        n_flash_lemma_inv__64_on_rules
+
+session n_flash_lemma_on_inv__65_Session = n_flash_lemma_on_inv__64_Session +
+    theories
+        n_flash_lemma_inv__65_on_rules
+
+session n_flash_lemma_on_inv__66_Session = n_flash_lemma_on_inv__65_Session +
+    theories
+        n_flash_lemma_inv__66_on_rules
+
+session n_flash_lemma_on_inv__67_Session = n_flash_lemma_on_inv__66_Session +
+    theories
+        n_flash_lemma_inv__67_on_rules
+
+session n_flash_lemma_on_inv__68_Session = n_flash_lemma_on_inv__67_Session +
+    theories
+        n_flash_lemma_inv__68_on_rules
+
+session n_flash_lemma_on_inv__69_Session = n_flash_lemma_on_inv__68_Session +
+    theories
+        n_flash_lemma_inv__69_on_rules
+
+session n_flash_lemma_on_inv__70_Session = n_flash_lemma_on_inv__69_Session +
+    theories
+        n_flash_lemma_inv__70_on_rules
+
+session n_flash_lemma_on_inv__71_Session = n_flash_lemma_on_inv__70_Session +
+    theories
+        n_flash_lemma_inv__71_on_rules
+
+session n_flash_lemma_on_inv__72_Session = n_flash_lemma_on_inv__71_Session +
+    theories
+        n_flash_lemma_inv__72_on_rules
+
+session n_flash_lemma_on_inv__73_Session = n_flash_lemma_on_inv__72_Session +
+    theories
+        n_flash_lemma_inv__73_on_rules
+
+session n_flash_lemma_on_inv__74_Session = n_flash_lemma_on_inv__73_Session +
+    theories
+        n_flash_lemma_inv__74_on_rules
+
+session n_flash_lemma_on_inv__75_Session = n_flash_lemma_on_inv__74_Session +
+    theories
+        n_flash_lemma_inv__75_on_rules
+
+session n_flash_lemma_on_inv__76_Session = n_flash_lemma_on_inv__75_Session +
+    theories
+        n_flash_lemma_inv__76_on_rules
+
+session n_flash_lemma_on_inv__77_Session = n_flash_lemma_on_inv__76_Session +
+    theories
+        n_flash_lemma_inv__77_on_rules
+
+session n_flash_lemma_on_inv__78_Session = n_flash_lemma_on_inv__77_Session +
+    theories
+        n_flash_lemma_inv__78_on_rules
+
+session n_flash_lemma_on_inv__79_Session = n_flash_lemma_on_inv__78_Session +
+    theories
+        n_flash_lemma_inv__79_on_rules
+
+session n_flash_lemma_on_inv__80_Session = n_flash_lemma_on_inv__79_Session +
+    theories
+        n_flash_lemma_inv__80_on_rules
+
+session n_flash_lemma_on_inv__81_Session = n_flash_lemma_on_inv__80_Session +
+    theories
+        n_flash_lemma_inv__81_on_rules
+
+session n_flash_lemma_on_inv__82_Session = n_flash_lemma_on_inv__81_Session +
+    theories
+        n_flash_lemma_inv__82_on_rules
+
+session n_flash_lemma_on_inv__83_Session = n_flash_lemma_on_inv__82_Session +
+    theories
+        n_flash_lemma_inv__83_on_rules
+
+session n_flash_lemma_on_inv__84_Session = n_flash_lemma_on_inv__83_Session +
+    theories
+        n_flash_lemma_inv__84_on_rules
+
+session n_flash_lemma_on_inv__85_Session = n_flash_lemma_on_inv__84_Session +
+    theories
+        n_flash_lemma_inv__85_on_rules
+
+session n_flash_lemma_on_inv__86_Session = n_flash_lemma_on_inv__85_Session +
+    theories
+        n_flash_lemma_inv__86_on_rules
+
+session n_flash_lemma_on_inv__87_Session = n_flash_lemma_on_inv__86_Session +
+    theories
+        n_flash_lemma_inv__87_on_rules
+
+session n_flash_lemma_on_inv__88_Session = n_flash_lemma_on_inv__87_Session +
+    theories
+        n_flash_lemma_inv__88_on_rules
+
+session n_flash_lemma_on_inv__89_Session = n_flash_lemma_on_inv__88_Session +
+    theories
+        n_flash_lemma_inv__89_on_rules
+
+session n_flash_lemma_on_inv__90_Session = n_flash_lemma_on_inv__89_Session +
+    theories
+        n_flash_lemma_inv__90_on_rules
+
+session n_flash_lemma_on_inv__91_Session = n_flash_lemma_on_inv__90_Session +
+    theories
+        n_flash_lemma_inv__91_on_rules
+
+session n_flash_lemma_on_inv__92_Session = n_flash_lemma_on_inv__91_Session +
+    theories
+        n_flash_lemma_inv__92_on_rules
+
+session n_flash_lemma_on_inv__93_Session = n_flash_lemma_on_inv__92_Session +
+    theories
+        n_flash_lemma_inv__93_on_rules
+
+session n_flash_lemma_on_inv__94_Session = n_flash_lemma_on_inv__93_Session +
+    theories
+        n_flash_lemma_inv__94_on_rules
+
+session n_flash_lemma_on_inv__95_Session = n_flash_lemma_on_inv__94_Session +
+    theories
+        n_flash_lemma_inv__95_on_rules
+
+session n_flash_lemma_on_inv__96_Session = n_flash_lemma_on_inv__95_Session +
+    theories
+        n_flash_lemma_inv__96_on_rules
+
+session n_flash_lemma_on_inv__97_Session = n_flash_lemma_on_inv__96_Session +
+    theories
+        n_flash_lemma_inv__97_on_rules
+
+session n_flash_lemma_on_inv__98_Session = n_flash_lemma_on_inv__97_Session +
+    theories
+        n_flash_lemma_inv__98_on_rules
+
+session n_flash_lemma_on_inv__99_Session = n_flash_lemma_on_inv__98_Session +
+    theories
+        n_flash_lemma_inv__99_on_rules
+
+session n_flash_lemma_on_inv__100_Session = n_flash_lemma_on_inv__99_Session +
+    theories
+        n_flash_lemma_inv__100_on_rules
+
+session n_flash_lemma_on_inv__101_Session = n_flash_lemma_on_inv__100_Session +
+    theories
+        n_flash_lemma_inv__101_on_rules
+
+session n_flash_lemma_on_inv__102_Session = n_flash_lemma_on_inv__101_Session +
+    theories
+        n_flash_lemma_inv__102_on_rules
+
+session n_flash_lemma_on_inv__103_Session = n_flash_lemma_on_inv__102_Session +
+    theories
+        n_flash_lemma_inv__103_on_rules
+
+session n_flash_lemma_on_inv__104_Session = n_flash_lemma_on_inv__103_Session +
+    theories
+        n_flash_lemma_inv__104_on_rules
+
+session n_flash_lemma_on_inv__105_Session = n_flash_lemma_on_inv__104_Session +
+    theories
+        n_flash_lemma_inv__105_on_rules
+
+session n_flash_lemma_on_inv__106_Session = n_flash_lemma_on_inv__105_Session +
+    theories
+        n_flash_lemma_inv__106_on_rules
+
+session n_flash_lemma_on_inv__107_Session = n_flash_lemma_on_inv__106_Session +
+    theories
+        n_flash_lemma_inv__107_on_rules
+
+session n_flash_lemma_on_inv__108_Session = n_flash_lemma_on_inv__107_Session +
+    theories
+        n_flash_lemma_inv__108_on_rules
+
+session n_flash_lemma_on_inv__109_Session = n_flash_lemma_on_inv__108_Session +
+    theories
+        n_flash_lemma_inv__109_on_rules
+
+session n_flash_lemma_on_inv__110_Session = n_flash_lemma_on_inv__109_Session +
+    theories
+        n_flash_lemma_inv__110_on_rules
+
+session n_flash_lemma_on_inv__111_Session = n_flash_lemma_on_inv__110_Session +
+    theories
+        n_flash_lemma_inv__111_on_rules
+
+session n_flash_lemma_on_inv__112_Session = n_flash_lemma_on_inv__111_Session +
+    theories
+        n_flash_lemma_inv__112_on_rules
+
+session n_flash_lemma_on_inv__113_Session = n_flash_lemma_on_inv__112_Session +
+    theories
+        n_flash_lemma_inv__113_on_rules
+
+session n_flash_lemma_on_inv__114_Session = n_flash_lemma_on_inv__113_Session +
+    theories
+        n_flash_lemma_inv__114_on_rules
+
+session n_flash_lemma_on_inv__115_Session = n_flash_lemma_on_inv__114_Session +
+    theories
+        n_flash_lemma_inv__115_on_rules
+
+session n_flash_lemma_on_inv__116_Session = n_flash_lemma_on_inv__115_Session +
+    theories
+        n_flash_lemma_inv__116_on_rules
+
+session n_flash_lemma_on_inv__117_Session = n_flash_lemma_on_inv__116_Session +
+    theories
+        n_flash_lemma_inv__117_on_rules
+
+session n_flash_lemma_on_inv__118_Session = n_flash_lemma_on_inv__117_Session +
+    theories
+        n_flash_lemma_inv__118_on_rules
+
+session n_flash_lemma_on_inv__119_Session = n_flash_lemma_on_inv__118_Session +
+    theories
+        n_flash_lemma_inv__119_on_rules
+
+session n_flash_lemma_on_inv__120_Session = n_flash_lemma_on_inv__119_Session +
+    theories
+        n_flash_lemma_inv__120_on_rules
+
+session n_flash_lemma_on_inv__121_Session = n_flash_lemma_on_inv__120_Session +
+    theories
+        n_flash_lemma_inv__121_on_rules
+
+session n_flash_lemma_on_inv__122_Session = n_flash_lemma_on_inv__121_Session +
+    theories
+        n_flash_lemma_inv__122_on_rules
+
+session n_flash_lemma_on_inv__123_Session = n_flash_lemma_on_inv__122_Session +
+    theories
+        n_flash_lemma_inv__123_on_rules
+
+session n_flash_lemma_on_inv__124_Session = n_flash_lemma_on_inv__123_Session +
+    theories
+        n_flash_lemma_inv__124_on_rules
+
+session n_flash_lemma_on_inv__125_Session = n_flash_lemma_on_inv__124_Session +
+    theories
+        n_flash_lemma_inv__125_on_rules
+
+session n_flash_lemma_on_inv__126_Session = n_flash_lemma_on_inv__125_Session +
+    theories
+        n_flash_lemma_inv__126_on_rules
+
+session n_flash_lemma_on_inv__127_Session = n_flash_lemma_on_inv__126_Session +
+    theories
+        n_flash_lemma_inv__127_on_rules
+
+session n_flash_lemma_on_inv__128_Session = n_flash_lemma_on_inv__127_Session +
+    theories
+        n_flash_lemma_inv__128_on_rules
+
+session n_flash_lemma_on_inv__129_Session = n_flash_lemma_on_inv__128_Session +
+    theories
+        n_flash_lemma_inv__129_on_rules
+
+session n_flash_lemma_on_inv__130_Session = n_flash_lemma_on_inv__129_Session +
+    theories
+        n_flash_lemma_inv__130_on_rules
+
+session n_flash_lemma_on_inv__131_Session = n_flash_lemma_on_inv__130_Session +
+    theories
+        n_flash_lemma_inv__131_on_rules
+
+session n_flash_lemma_on_inv__132_Session = n_flash_lemma_on_inv__131_Session +
+    theories
+        n_flash_lemma_inv__132_on_rules
+
+session n_flash_lemma_on_inv__133_Session = n_flash_lemma_on_inv__132_Session +
+    theories
+        n_flash_lemma_inv__133_on_rules
+
+session n_flash_lemma_on_inv__134_Session = n_flash_lemma_on_inv__133_Session +
+    theories
+        n_flash_lemma_inv__134_on_rules
+
+session n_flash_lemma_on_inv__135_Session = n_flash_lemma_on_inv__134_Session +
+    theories
+        n_flash_lemma_inv__135_on_rules
+
+session n_flash_lemma_on_inv__136_Session = n_flash_lemma_on_inv__135_Session +
+    theories
+        n_flash_lemma_inv__136_on_rules
+
+session n_flash_lemma_on_inv__137_Session = n_flash_lemma_on_inv__136_Session +
+    theories
+        n_flash_lemma_inv__137_on_rules
+
+session n_flash_lemma_on_inv__138_Session = n_flash_lemma_on_inv__137_Session +
+    theories
+        n_flash_lemma_inv__138_on_rules
+
+session n_flash_lemma_on_inv__139_Session = n_flash_lemma_on_inv__138_Session +
+    theories
+        n_flash_lemma_inv__139_on_rules
+
+session n_flash_lemma_on_inv__140_Session = n_flash_lemma_on_inv__139_Session +
+    theories
+        n_flash_lemma_inv__140_on_rules
+
+session n_flash_lemma_on_inv__141_Session = n_flash_lemma_on_inv__140_Session +
+    theories
+        n_flash_lemma_inv__141_on_rules
+
+session n_flash_lemma_on_inv__142_Session = n_flash_lemma_on_inv__141_Session +
+    theories
+        n_flash_lemma_inv__142_on_rules
+
+session n_flash_lemma_on_inv__143_Session = n_flash_lemma_on_inv__142_Session +
+    theories
+        n_flash_lemma_inv__143_on_rules
+
+session n_flash_lemma_on_inv__144_Session = n_flash_lemma_on_inv__143_Session +
+    theories
+        n_flash_lemma_inv__144_on_rules
+
+session n_flash_lemma_on_inv__145_Session = n_flash_lemma_on_inv__144_Session +
+    theories
+        n_flash_lemma_inv__145_on_rules
+
+session n_flash_lemma_on_inv__146_Session = n_flash_lemma_on_inv__145_Session +
+    theories
+        n_flash_lemma_inv__146_on_rules
+
+session n_flash_lemma_on_inv__147_Session = n_flash_lemma_on_inv__146_Session +
+    theories
+        n_flash_lemma_inv__147_on_rules
+
+session n_flash_lemma_on_inv__148_Session = n_flash_lemma_on_inv__147_Session +
+    theories
+        n_flash_lemma_inv__148_on_rules
+
+session n_flash_lemma_on_inv__149_Session = n_flash_lemma_on_inv__148_Session +
+    theories
+        n_flash_lemma_inv__149_on_rules
+
+session n_flash_lemma_on_inv__150_Session = n_flash_lemma_on_inv__149_Session +
+    theories
+        n_flash_lemma_inv__150_on_rules
+
+session n_flash_lemma_on_inv__151_Session = n_flash_lemma_on_inv__150_Session +
+    theories
+        n_flash_lemma_inv__151_on_rules
+
+session n_flash_lemma_on_inv__152_Session = n_flash_lemma_on_inv__151_Session +
+    theories
+        n_flash_lemma_inv__152_on_rules
+
+session n_flash_lemma_on_inv__153_Session = n_flash_lemma_on_inv__152_Session +
+    theories
+        n_flash_lemma_inv__153_on_rules
+
+session n_flash_lemma_on_inv__154_Session = n_flash_lemma_on_inv__153_Session +
+    theories
+        n_flash_lemma_inv__154_on_rules
+
+session n_flash_lemma_on_inv__155_Session = n_flash_lemma_on_inv__154_Session +
+    theories
+        n_flash_lemma_inv__155_on_rules
+
+session n_flash_lemma_on_inv__156_Session = n_flash_lemma_on_inv__155_Session +
+    theories
+        n_flash_lemma_inv__156_on_rules
+
+session n_flash_lemma_on_inv__157_Session = n_flash_lemma_on_inv__156_Session +
+    theories
+        n_flash_lemma_inv__157_on_rules
+
+session n_flash_lemma_on_inv__158_Session = n_flash_lemma_on_inv__157_Session +
+    theories
+        n_flash_lemma_inv__158_on_rules
+
+session n_flash_lemma_on_inv__159_Session = n_flash_lemma_on_inv__158_Session +
+    theories
+        n_flash_lemma_inv__159_on_rules
+
+session n_flash_lemma_on_inv__160_Session = n_flash_lemma_on_inv__159_Session +
+    theories
+        n_flash_lemma_inv__160_on_rules
+
+session n_flash_lemma_on_inv__161_Session = n_flash_lemma_on_inv__160_Session +
+    theories
+        n_flash_lemma_inv__161_on_rules
+
+session n_flash_lemma_on_inv__162_Session = n_flash_lemma_on_inv__161_Session +
+    theories
+        n_flash_lemma_inv__162_on_rules
+
+session n_flash_lemma_invs_on_rules_Session = n_flash_lemma_on_inv__162_Session +
+    theories
+        n_flash_lemma_invs_on_rules
+
+session n_flash_invs_on_inis_Session = n_flash_lemma_invs_on_rules_Session +
+    theories
+        n_flash_on_inis
+
+session n_flash_Session = n_flash_invs_on_inis_Session +
+    theories
+        n_flash

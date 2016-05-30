@@ -8,31 +8,31 @@ session n_mutualEx_base_Session = paraTheory_Session +
 
 session n_mutualEx_lemma_on_inv__1_Session = n_mutualEx_base_Session +
     theories
-        lemma_inv__1_on_rules
+        n_mutualEx_lemma_inv__1_on_rules
 
 session n_mutualEx_lemma_on_inv__2_Session = n_mutualEx_lemma_on_inv__1_Session +
     theories
-        lemma_inv__2_on_rules
+        n_mutualEx_lemma_inv__2_on_rules
 
 session n_mutualEx_lemma_on_inv__3_Session = n_mutualEx_lemma_on_inv__2_Session +
     theories
-        lemma_inv__3_on_rules
+        n_mutualEx_lemma_inv__3_on_rules
 
 session n_mutualEx_lemma_on_inv__4_Session = n_mutualEx_lemma_on_inv__3_Session +
     theories
-        lemma_inv__4_on_rules
+        n_mutualEx_lemma_inv__4_on_rules
 
 session n_mutualEx_lemma_on_inv__5_Session = n_mutualEx_lemma_on_inv__4_Session +
     theories
-        lemma_inv__5_on_rules
+        n_mutualEx_lemma_inv__5_on_rules
 
 session n_mutualEx_lemma_invs_on_rules_Session = n_mutualEx_lemma_on_inv__5_Session +
     theories
-        lemma_invs_on_rules
+        n_mutualEx_lemma_invs_on_rules
 
 session n_mutualEx_invs_on_inis_Session = n_mutualEx_lemma_invs_on_rules_Session +
     theories
-        on_inis
+        n_mutualEx_on_inis
 
 session n_mutualEx_Session = n_mutualEx_invs_on_inis_Session +
     theories

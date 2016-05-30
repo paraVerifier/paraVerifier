@@ -8,23 +8,23 @@ session n_moesi_base_Session = paraTheory_Session +
 
 session n_moesi_lemma_on_inv__1_Session = n_moesi_base_Session +
     theories
-        lemma_inv__1_on_rules
+        n_moesi_lemma_inv__1_on_rules
 
 session n_moesi_lemma_on_inv__2_Session = n_moesi_lemma_on_inv__1_Session +
     theories
-        lemma_inv__2_on_rules
+        n_moesi_lemma_inv__2_on_rules
 
 session n_moesi_lemma_on_inv__3_Session = n_moesi_lemma_on_inv__2_Session +
     theories
-        lemma_inv__3_on_rules
+        n_moesi_lemma_inv__3_on_rules
 
 session n_moesi_lemma_invs_on_rules_Session = n_moesi_lemma_on_inv__3_Session +
     theories
-        lemma_invs_on_rules
+        n_moesi_lemma_invs_on_rules
 
 session n_moesi_invs_on_inis_Session = n_moesi_lemma_invs_on_rules_Session +
     theories
-        on_inis
+        n_moesi_on_inis
 
 session n_moesi_Session = n_moesi_invs_on_inis_Session +
     theories

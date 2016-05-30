@@ -1,6 +1,16 @@
+(*  Title:      HOL/Auth/n_flash_nodata_cub_base.thy
+    Author:     Yongjian Li and Kaiqiang Duan, State Key Lab of Computer Science, Institute of Software, Chinese Academy of Sciences
+    Copyright    2016 State Key Lab of Computer Science, Institute of Software, Chinese Academy of Sciences
+*)
+
+header{*The n_flash_nodata_cub Protocol Case Study*} 
+
 theory n_flash_nodata_cub_base imports paraTheory
 begin
+
 section{*Main definitions*}
+
+subsection{* Definitions of Constants*}
 definition CACHE_I::"scalrValueType" where [simp]: "CACHE_I\<equiv> enum ''control'' ''CACHE_I''"
 definition CACHE_S::"scalrValueType" where [simp]: "CACHE_S\<equiv> enum ''control'' ''CACHE_S''"
 definition CACHE_E::"scalrValueType" where [simp]: "CACHE_E\<equiv> enum ''control'' ''CACHE_E''"
@@ -27,6 +37,10 @@ definition NAKC_None::"scalrValueType" where [simp]: "NAKC_None\<equiv> enum ''c
 definition NAKC_Nakc::"scalrValueType" where [simp]: "NAKC_Nakc\<equiv> enum ''control'' ''NAKC_Nakc''"
 definition true::"scalrValueType" where [simp]: "true\<equiv> boolV True"
 definition false::"scalrValueType" where [simp]: "false\<equiv> boolV False"
+
+
+
+subsection{*  Definitions of Parameterized Rules *}
 
 definition n_PI_Remote_Get::"nat \<Rightarrow> rule" where [simp]:
 "n_PI_Remote_Get  src\<equiv>
@@ -460,6 +474,7 @@ let g = (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeRpMsg'') ''Cmd'')) (Const
 let s = (parallelList [(assign ((Field (Field (Ident ''Sta'') ''HomeRpMsg'') ''Cmd''), (Const RP_None))), (assign ((Field (Field (Ident ''Sta'') ''Dir'') ''HomeInvSet''), (iteForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true)) (Const false) (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HomeInvSet''))))), (assign ((Field (Field (Ident ''Sta'') ''Dir'') ''HomeShrSet''), (iteForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true)) (Const false) (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HomeShrSet'')))))]) in
 guard g s"
 
+subsection{*The set of All actual Rules w.r.t. a Protocol Instance with Size $N$*}
 definition rules::"nat \<Rightarrow> rule set" where [simp]:
 "rules N \<equiv> {r.
 (\<exists> src. src\<le>N\<and>r=n_PI_Remote_Get  src) \<or>
@@ -536,77 +551,81 @@ definition rules::"nat \<Rightarrow> rule set" where [simp]:
 (r=n_NI_Replace_Home  )
 }"
 
+
+
+subsection{*Definitions of a Formally Parameterized Invariant Formulas*}
+
 definition inv__1::"nat \<Rightarrow> nat \<Rightarrow> formula" where [simp]:
-"inv__1 p__Inv0 p__Inv1 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv1) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv0) ''CacheState'')) (Const CACHE_E))))"
+"inv__1 p__Inv3 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv3) ''CacheState'')) (Const CACHE_E))))"
 
 definition inv__2::"nat \<Rightarrow> formula" where [simp]:
-"inv__2 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv0) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeProc'') ''CacheState'')) (Const CACHE_E))))"
+"inv__2 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeProc'') ''CacheState'')) (Const CACHE_E))))"
 
 definition inv__3::"nat \<Rightarrow> nat \<Rightarrow> formula" where [simp]:
-"inv__3 p__Inv0 p__Inv1 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv1) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_PutX))))"
+"inv__3 p__Inv3 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv3) ''Cmd'')) (Const UNI_PutX))))"
 
 definition inv__4::"nat \<Rightarrow> formula" where [simp]:
-"inv__4 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeProc'') ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_PutX))))"
+"inv__4 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeProc'') ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_PutX))))"
 
 definition inv__5::"nat \<Rightarrow> formula" where [simp]:
-"inv__5 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv0) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Dirty'')) (Const false))))"
+"inv__5 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Dirty'')) (Const false))))"
 
 definition inv__6::"nat \<Rightarrow> formula" where [simp]:
-"inv__6 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv0) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_PutX))))"
+"inv__6 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_PutX))))"
 
 definition inv__7::"formula" where [simp]:
 "inv__7  \<equiv>
 (neg (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HomeShrSet'')) (Const true)))"
 
 definition inv__8::"nat \<Rightarrow> formula" where [simp]:
-"inv__8 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv0) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Local'')) (Const true))))"
+"inv__8 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Local'')) (Const true))))"
 
 definition inv__9::"nat \<Rightarrow> nat \<Rightarrow> formula" where [simp]:
-"inv__9 p__Inv0 p__Inv1 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv1) ''Cmd'')) (Const UNI_PutX))))"
+"inv__9 p__Inv3 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv3) ''Cmd'')) (Const UNI_PutX))))"
 
 definition inv__10::"formula" where [simp]:
 "inv__10  \<equiv>
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeProc'') ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Dirty'')) (Const false))))"
 
 definition inv__11::"nat \<Rightarrow> formula" where [simp]:
-"inv__11 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Dirty'')) (Const false))))"
+"inv__11 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Dirty'')) (Const false))))"
 
 definition inv__12::"nat \<Rightarrow> formula" where [simp]:
-"inv__12 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_PutX))))"
+"inv__12 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_PutX))))"
 
 definition inv__13::"nat \<Rightarrow> formula" where [simp]:
-"inv__13 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv0) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Put))))"
+"inv__13 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Put))))"
 
 definition inv__14::"nat \<Rightarrow> formula" where [simp]:
-"inv__14 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv0) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''WbMsg'') ''Cmd'')) (Const WB_Wb))))"
+"inv__14 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''WbMsg'') ''Cmd'')) (Const WB_Wb))))"
 
 definition inv__15::"nat \<Rightarrow> formula" where [simp]:
-"inv__15 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv0) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb))))"
+"inv__15 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb))))"
 
 definition inv__16::"formula" where [simp]:
 "inv__16  \<equiv>
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''HomeProc'')) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb))))"
 
 definition inv__17::"nat \<Rightarrow> formula" where [simp]:
-"inv__17 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Local'')) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_PutX))))"
+"inv__17 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Local'')) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_PutX))))"
 
 definition inv__18::"nat \<Rightarrow> formula" where [simp]:
-"inv__18 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv0) ''CacheState'')) (Const CACHE_E))))"
+"inv__18 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E))))"
 
 definition inv__19::"formula" where [simp]:
 "inv__19  \<equiv>
@@ -621,16 +640,16 @@ definition inv__21::"formula" where [simp]:
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeProc'') ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb))))"
 
 definition inv__22::"nat \<Rightarrow> formula" where [simp]:
-"inv__22 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Put))))"
+"inv__22 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Put))))"
 
 definition inv__23::"nat \<Rightarrow> formula" where [simp]:
-"inv__23 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Field (Ident ''Sta'') ''WbMsg'') ''Cmd'')) (Const WB_Wb))))"
+"inv__23 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Field (Ident ''Sta'') ''WbMsg'') ''Cmd'')) (Const WB_Wb))))"
 
 definition inv__24::"nat \<Rightarrow> formula" where [simp]:
-"inv__24 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb))))"
+"inv__24 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb))))"
 
 definition inv__25::"formula" where [simp]:
 "inv__25  \<equiv>
@@ -642,7 +661,7 @@ definition inv__26::"formula" where [simp]:
 
 definition inv__27::"formula" where [simp]:
 "inv__27  \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_PutX)) (neg (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const true)))))"
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))))"
 
 definition inv__28::"formula" where [simp]:
 "inv__28  \<equiv>
@@ -686,11 +705,11 @@ definition inv__37::"formula" where [simp]:
 
 definition inv__38::"formula" where [simp]:
 "inv__38  \<equiv>
-(neg (andForm (neg (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const true))) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_GetX))))"
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false)) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_GetX))))"
 
 definition inv__39::"nat \<Rightarrow> formula" where [simp]:
-"inv__39 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true))))"
+"inv__39 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv4)) (Const true))))"
 
 definition inv__40::"formula" where [simp]:
 "inv__40  \<equiv>
@@ -714,7 +733,7 @@ definition inv__44::"formula" where [simp]:
 
 definition inv__45::"formula" where [simp]:
 "inv__45  \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb)) (neg (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const true)))))"
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))))"
 
 definition inv__46::"formula" where [simp]:
 "inv__46  \<equiv>
@@ -726,7 +745,7 @@ definition inv__47::"formula" where [simp]:
 
 definition inv__48::"formula" where [simp]:
 "inv__48  \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Put)) (neg (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const true)))))"
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Put)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))))"
 
 definition inv__49::"formula" where [simp]:
 "inv__49  \<equiv>
@@ -741,8 +760,8 @@ definition inv__51::"formula" where [simp]:
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Dirty'')) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeProc'') ''CacheState'')) (Const CACHE_S))))"
 
 definition inv__52::"nat \<Rightarrow> formula" where [simp]:
-"inv__52 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true))))"
+"inv__52 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv4)) (Const true))))"
 
 definition inv__53::"formula" where [simp]:
 "inv__53  \<equiv>
@@ -753,32 +772,32 @@ definition inv__54::"formula" where [simp]:
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_FAck))))"
 
 definition inv__55::"nat \<Rightarrow> formula" where [simp]:
-"inv__55 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true))))"
+"inv__55 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv4)) (Const true))))"
 
 definition inv__56::"formula" where [simp]:
 "inv__56  \<equiv>
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true))))"
 
 definition inv__57::"nat \<Rightarrow> formula" where [simp]:
-"inv__57 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))))"
+"inv__57 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_Get))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))))"
 
 definition inv__58::"nat \<Rightarrow> formula" where [simp]:
-"inv__58 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))))"
+"inv__58 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_PutX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))))"
 
 definition inv__59::"nat \<Rightarrow> formula" where [simp]:
-"inv__59 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))))"
+"inv__59 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_Get))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))))"
 
 definition inv__60::"nat \<Rightarrow> formula" where [simp]:
-"inv__60 p__Inv0 \<equiv>
-(neg (andForm (andForm (neg (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const true))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))))"
+"inv__60 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_Get))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))))"
 
 definition inv__61::"nat \<Rightarrow> formula" where [simp]:
-"inv__61 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true))))"
+"inv__61 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv4)) (Const true))))"
 
 definition inv__62::"formula" where [simp]:
 "inv__62  \<equiv>
@@ -794,11 +813,11 @@ definition inv__64::"formula" where [simp]:
 
 definition inv__65::"formula" where [simp]:
 "inv__65  \<equiv>
-(neg (andForm (neg (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const true))) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Get))))"
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false)) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Get))))"
 
 definition inv__66::"nat \<Rightarrow> formula" where [simp]:
-"inv__66 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Put)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true))))"
+"inv__66 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Put)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv4)) (Const true))))"
 
 definition inv__67::"formula" where [simp]:
 "inv__67  \<equiv>
@@ -813,20 +832,20 @@ definition inv__69::"formula" where [simp]:
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeProc'') ''CacheState'')) (Const CACHE_S)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Local'')) (Const false))))"
 
 definition inv__70::"nat \<Rightarrow> formula" where [simp]:
-"inv__70 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true))))"
+"inv__70 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv4)) (Const true))))"
 
 definition inv__71::"formula" where [simp]:
 "inv__71  \<equiv>
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true))))"
 
 definition inv__72::"nat \<Rightarrow> formula" where [simp]:
-"inv__72 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Dirty'')) (Const true))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))))"
+"inv__72 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Dirty'')) (Const true))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))))"
 
 definition inv__73::"nat \<Rightarrow> formula" where [simp]:
-"inv__73 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))))"
+"inv__73 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))))"
 
 definition inv__74::"formula" where [simp]:
 "inv__74  \<equiv>
@@ -837,60 +856,60 @@ definition inv__75::"formula" where [simp]:
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_FAck)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))))"
 
 definition inv__76::"nat \<Rightarrow> formula" where [simp]:
-"inv__76 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv0) ''CacheState'')) (Const CACHE_E))))"
+"inv__76 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E))))"
 
 definition inv__77::"nat \<Rightarrow> formula" where [simp]:
-"inv__77 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv0) ''CacheState'')) (Const CACHE_E))))"
+"inv__77 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E))))"
 
 definition inv__78::"nat \<Rightarrow> formula" where [simp]:
-"inv__78 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true))))"
+"inv__78 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv4)) (Const true))))"
 
 definition inv__79::"nat \<Rightarrow> nat \<Rightarrow> formula" where [simp]:
-"inv__79 p__Inv0 p__Inv1 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv1)) (Const true))))"
+"inv__79 p__Inv3 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv3) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv3) ''HomeProc'')) (Const false))) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv4)) (Const true))))"
 
 definition inv__80::"nat \<Rightarrow> formula" where [simp]:
-"inv__80 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''NakcMsg'') ''Cmd'')) (Const NAKC_Nakc))))"
+"inv__80 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''NakcMsg'') ''Cmd'')) (Const NAKC_Nakc))))"
 
 definition inv__81::"nat \<Rightarrow> formula" where [simp]:
-"inv__81 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Put))))"
+"inv__81 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Put))))"
 
 definition inv__82::"nat \<Rightarrow> formula" where [simp]:
-"inv__82 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_FAck))))"
+"inv__82 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_FAck))))"
 
 definition inv__83::"nat \<Rightarrow> formula" where [simp]:
-"inv__83 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb))))"
+"inv__83 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb))))"
 
 definition inv__84::"nat \<Rightarrow> formula" where [simp]:
-"inv__84 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true))))"
+"inv__84 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv4)) (Const true))))"
 
 definition inv__85::"nat \<Rightarrow> formula" where [simp]:
-"inv__85 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv0) ''CacheState'')) (Const CACHE_E))))"
+"inv__85 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E))))"
 
 definition inv__86::"formula" where [simp]:
 "inv__86  \<equiv>
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true))))"
 
 definition inv__87::"nat \<Rightarrow> formula" where [simp]:
-"inv__87 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))))"
+"inv__87 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))))"
 
 definition inv__88::"nat \<Rightarrow> formula" where [simp]:
-"inv__88 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))))"
+"inv__88 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_Get))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))))"
 
 definition inv__89::"nat \<Rightarrow> formula" where [simp]:
-"inv__89 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true))))"
+"inv__89 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv4)) (Const true))))"
 
 definition inv__90::"formula" where [simp]:
 "inv__90  \<equiv>
@@ -901,128 +920,128 @@ definition inv__91::"formula" where [simp]:
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_FAck))))"
 
 definition inv__92::"nat \<Rightarrow> formula" where [simp]:
-"inv__92 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Put)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true))))"
+"inv__92 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Put)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv4)) (Const true))))"
 
 definition inv__93::"formula" where [simp]:
 "inv__93  \<equiv>
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Put)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true))))"
 
 definition inv__94::"nat \<Rightarrow> formula" where [simp]:
-"inv__94 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Put)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))))"
+"inv__94 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Put)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))))"
 
 definition inv__95::"formula" where [simp]:
 "inv__95  \<equiv>
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeProc'') ''CacheState'')) (Const CACHE_S)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const true))))"
 
 definition inv__96::"nat \<Rightarrow> formula" where [simp]:
-"inv__96 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Dirty'')) (Const true))))"
+"inv__96 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Dirty'')) (Const true))))"
 
 definition inv__97::"formula" where [simp]:
 "inv__97  \<equiv>
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Dirty'')) (Const true))))"
 
 definition inv__98::"nat \<Rightarrow> formula" where [simp]:
-"inv__98 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HeadVld'')) (Const false))))"
+"inv__98 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HeadVld'')) (Const false))))"
 
 definition inv__99::"nat \<Rightarrow> formula" where [simp]:
-"inv__99 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''NakcMsg'') ''Cmd'')) (Const NAKC_Nakc))))"
+"inv__99 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''NakcMsg'') ''Cmd'')) (Const NAKC_Nakc))))"
 
 definition inv__100::"nat \<Rightarrow> formula" where [simp]:
-"inv__100 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_FAck))))"
+"inv__100 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_FAck))))"
 
 definition inv__101::"nat \<Rightarrow> formula" where [simp]:
-"inv__101 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))))"
+"inv__101 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))))"
 
 definition inv__102::"formula" where [simp]:
 "inv__102  \<equiv>
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''NakcMsg'') ''Cmd'')) (Const NAKC_Nakc)) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_FAck))))"
 
 definition inv__103::"nat \<Rightarrow> formula" where [simp]:
-"inv__103 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv0) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HomeHeadPtr'')) (Const true))))"
+"inv__103 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HomeHeadPtr'')) (Const true))))"
 
 definition inv__104::"nat \<Rightarrow> formula" where [simp]:
-"inv__104 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true))))"
+"inv__104 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv4)) (Const true))))"
 
 definition inv__105::"formula" where [simp]:
 "inv__105  \<equiv>
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HomeHeadPtr'')) (Const true))))"
 
 definition inv__106::"nat \<Rightarrow> formula" where [simp]:
-"inv__106 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true))))"
+"inv__106 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true))))"
 
 definition inv__107::"nat \<Rightarrow> formula" where [simp]:
-"inv__107 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HeadPtr'')) (Const (index p__Inv0)))))"
+"inv__107 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HeadPtr'')) (Const (index p__Inv4)))))"
 
 definition inv__108::"formula" where [simp]:
 "inv__108  \<equiv>
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Local'')) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeProc'') ''ProcCmd'')) (Const NODE_Get))))"
 
 definition inv__109::"nat \<Rightarrow> nat \<Rightarrow> formula" where [simp]:
-"inv__109 p__Inv0 p__Inv1 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv1)) (Const true))))"
+"inv__109 p__Inv3 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv3)) (Const true))))"
 
 definition inv__110::"nat \<Rightarrow> formula" where [simp]:
-"inv__110 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Local'')) (Const true))))"
+"inv__110 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Local'')) (Const true))))"
 
 definition inv__111::"nat \<Rightarrow> nat \<Rightarrow> formula" where [simp]:
-"inv__111 p__Inv0 p__Inv1 \<equiv>
-(neg (andForm (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv1) ''Cmd'')) (Const UNI_Get))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv1) ''HomeProc'')) (Const false))))"
+"inv__111 p__Inv3 p__Inv4 \<equiv>
+(neg (andForm (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv3) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv3) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_Get))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))))"
 
 definition inv__112::"nat \<Rightarrow> nat \<Rightarrow> formula" where [simp]:
-"inv__112 p__Inv0 p__Inv1 \<equiv>
-(neg (andForm (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv1) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv1) ''HomeProc'')) (Const false))))"
+"inv__112 p__Inv3 p__Inv4 \<equiv>
+(neg (andForm (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv3) ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv3) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))))"
 
 definition inv__113::"nat \<Rightarrow> nat \<Rightarrow> formula" where [simp]:
-"inv__113 p__Inv0 p__Inv1 \<equiv>
-(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv1) ''CacheState'')) (Const CACHE_E))))"
+"inv__113 p__Inv3 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv3)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E))))"
 
 definition inv__114::"nat \<Rightarrow> formula" where [simp]:
-"inv__114 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv0) ''CacheState'')) (Const CACHE_E))))"
+"inv__114 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E))))"
 
 definition inv__115::"nat \<Rightarrow> formula" where [simp]:
-"inv__115 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv0) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true))))"
+"inv__115 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true))))"
 
 definition inv__116::"nat \<Rightarrow> formula" where [simp]:
-"inv__116 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_PutX))))"
+"inv__116 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_PutX))))"
 
 definition inv__117::"nat \<Rightarrow> formula" where [simp]:
-"inv__117 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true))))"
+"inv__117 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv4)) (Const true))))"
 
 definition inv__118::"formula" where [simp]:
 "inv__118  \<equiv>
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true))))"
 
 definition inv__119::"nat \<Rightarrow> formula" where [simp]:
-"inv__119 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))))"
+"inv__119 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''HomeUniMsg'') ''Cmd'')) (Const UNI_Get)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))))"
 
 definition inv__120::"nat \<Rightarrow> formula" where [simp]:
-"inv__120 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HeadVld'')) (Const false))))"
+"inv__120 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HeadVld'')) (Const false))))"
 
 definition inv__121::"formula" where [simp]:
 "inv__121  \<equiv>
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HeadVld'')) (Const false))))"
 
 definition inv__122::"nat \<Rightarrow> formula" where [simp]:
-"inv__122 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_FAck))))"
+"inv__122 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_FAck))))"
 
 definition inv__123::"formula" where [simp]:
 "inv__123  \<equiv>
@@ -1033,24 +1052,24 @@ definition inv__124::"formula" where [simp]:
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_FAck)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Local'')) (Const true))))"
 
 definition inv__125::"nat \<Rightarrow> formula" where [simp]:
-"inv__125 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))))"
+"inv__125 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))))"
 
 definition inv__126::"nat \<Rightarrow> nat \<Rightarrow> formula" where [simp]:
-"inv__126 p__Inv0 p__Inv1 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv1) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv1) ''HomeProc'')) (Const false))))"
+"inv__126 p__Inv3 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv3)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))))"
 
 definition inv__127::"nat \<Rightarrow> formula" where [simp]:
-"inv__127 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''WbMsg'') ''Cmd'')) (Const WB_Wb))))"
+"inv__127 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''WbMsg'') ''Cmd'')) (Const WB_Wb))))"
 
 definition inv__128::"formula" where [simp]:
 "inv__128  \<equiv>
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HeadVld'')) (Const false)) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb))))"
 
 definition inv__129::"nat \<Rightarrow> formula" where [simp]:
-"inv__129 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''NakcMsg'') ''Cmd'')) (Const NAKC_Nakc))))"
+"inv__129 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''NakcMsg'') ''Cmd'')) (Const NAKC_Nakc))))"
 
 definition inv__130::"formula" where [simp]:
 "inv__130  \<equiv>
@@ -1061,16 +1080,16 @@ definition inv__131::"formula" where [simp]:
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''NakcMsg'') ''Cmd'')) (Const NAKC_Nakc)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Local'')) (Const true))))"
 
 definition inv__132::"nat \<Rightarrow> formula" where [simp]:
-"inv__132 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''NakcMsg'') ''Cmd'')) (Const NAKC_Nakc))))"
+"inv__132 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''NakcMsg'') ''Cmd'')) (Const NAKC_Nakc))))"
 
 definition inv__133::"nat \<Rightarrow> formula" where [simp]:
-"inv__133 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_FAck))))"
+"inv__133 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_FAck))))"
 
 definition inv__134::"nat \<Rightarrow> formula" where [simp]:
-"inv__134 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HomeHeadPtr'')) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_PutX))))"
+"inv__134 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HomeHeadPtr'')) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_PutX))))"
 
 definition inv__135::"formula" where [simp]:
 "inv__135  \<equiv>
@@ -1085,91 +1104,92 @@ definition inv__137::"formula" where [simp]:
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HomeHeadPtr'')) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''ShWbMsg'') ''Cmd'')) (Const SHWB_ShWb))))"
 
 definition inv__138::"nat \<Rightarrow> nat \<Rightarrow> formula" where [simp]:
-"inv__138 p__Inv0 p__Inv1 \<equiv>
-(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv1) ''Cmd'')) (Const UNI_PutX))))"
+"inv__138 p__Inv3 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv3) ''Cmd'')) (Const UNI_PutX))))"
 
 definition inv__139::"nat \<Rightarrow> formula" where [simp]:
-"inv__139 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_PutX))))"
+"inv__139 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_PutX))))"
 
 definition inv__140::"nat \<Rightarrow> formula" where [simp]:
-"inv__140 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_PutX))))"
+"inv__140 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_PutX))))"
 
 definition inv__141::"nat \<Rightarrow> formula" where [simp]:
-"inv__141 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''WbMsg'') ''Cmd'')) (Const WB_Wb))))"
+"inv__141 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''WbMsg'') ''Cmd'')) (Const WB_Wb))))"
 
 definition inv__142::"formula" where [simp]:
 "inv__142  \<equiv>
 (neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''WbMsg'') ''Cmd'')) (Const WB_Wb))))"
 
 definition inv__143::"nat \<Rightarrow> formula" where [simp]:
-"inv__143 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))))"
+"inv__143 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))))"
 
 definition inv__144::"nat \<Rightarrow> formula" where [simp]:
-"inv__144 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true))))"
+"inv__144 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''ShrVld'')) (Const true))))"
 
 definition inv__145::"nat \<Rightarrow> formula" where [simp]:
-"inv__145 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HeadPtr'')) (Const (index p__Inv0)))))"
+"inv__145 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HeadPtr'')) (Const (index p__Inv4)))))"
 
 definition inv__146::"nat \<Rightarrow> nat \<Rightarrow> formula" where [simp]:
-"inv__146 p__Inv0 p__Inv1 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv1) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv1) ''HomeProc'')) (Const false))))"
+"inv__146 p__Inv3 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''ShrSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv3) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv3) ''HomeProc'')) (Const false))))"
 
 definition inv__147::"nat \<Rightarrow> formula" where [simp]:
-"inv__147 p__Inv0 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Local'')) (Const true))))"
+"inv__147 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Local'')) (Const true))))"
 
 definition inv__148::"nat \<Rightarrow> nat \<Rightarrow> formula" where [simp]:
-"inv__148 p__Inv0 p__Inv1 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv1) ''CacheState'')) (Const CACHE_E))))"
+"inv__148 p__Inv3 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv3)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E))))"
 
 definition inv__149::"nat \<Rightarrow> formula" where [simp]:
-"inv__149 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HeadVld'')) (Const false)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv0) ''CacheState'')) (Const CACHE_E))))"
+"inv__149 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HeadVld'')) (Const false)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''Proc'') p__Inv4) ''CacheState'')) (Const CACHE_E))))"
 
 definition inv__150::"nat \<Rightarrow> nat \<Rightarrow> formula" where [simp]:
-"inv__150 p__Inv0 p__Inv1 \<equiv>
-(neg (andForm (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv1) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv1) ''HomeProc'')) (Const false))))"
+"inv__150 p__Inv3 p__Inv4 \<equiv>
+(neg (andForm (andForm (andForm (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv3) ''Cmd'')) (Const UNI_GetX)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv3) ''HomeProc'')) (Const false))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_GetX))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''HomeProc'')) (Const false))))"
 
 definition inv__151::"nat \<Rightarrow> nat \<Rightarrow> formula" where [simp]:
-"inv__151 p__Inv0 p__Inv1 \<equiv>
-(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv0)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv1) ''Cmd'')) (Const UNI_PutX))))"
+"inv__151 p__Inv3 p__Inv4 \<equiv>
+(neg (andForm (andForm (eqn (IVar (Para (Field (Field (Ident ''Sta'') ''Dir'') ''InvSet'') p__Inv4)) (Const true)) (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv3) ''Cmd'')) (Const UNI_PutX))))"
 
 definition inv__152::"nat \<Rightarrow> formula" where [simp]:
-"inv__152 p__Inv0 \<equiv>
-(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HeadVld'')) (Const false)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv0) ''Cmd'')) (Const UNI_PutX))))"
+"inv__152 p__Inv4 \<equiv>
+(neg (andForm (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''HeadVld'')) (Const false)) (eqn (IVar (Field (Para (Field (Ident ''Sta'') ''UniMsg'') p__Inv4) ''Cmd'')) (Const UNI_PutX))))"
 
+subsection{*Definitions of  the Set of Invariant Formula Instances in a $N$-protocol Instance*}
 definition invariants::"nat \<Rightarrow> formula set" where [simp]:
 "invariants N \<equiv> {f.
-(\<exists> p__Inv0 p__Inv1. p__Inv0\<le>N\<and>p__Inv1\<le>N\<and>p__Inv0~=p__Inv1\<and>f=inv__1  p__Inv0 p__Inv1) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__2  p__Inv0) \<or>
-(\<exists> p__Inv0 p__Inv1. p__Inv0\<le>N\<and>p__Inv1\<le>N\<and>p__Inv0~=p__Inv1\<and>f=inv__3  p__Inv0 p__Inv1) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__4  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__5  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__6  p__Inv0) \<or>
+(\<exists> p__Inv3 p__Inv4. p__Inv3\<le>N\<and>p__Inv4\<le>N\<and>p__Inv3~=p__Inv4\<and>f=inv__1  p__Inv3 p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__2  p__Inv4) \<or>
+(\<exists> p__Inv3 p__Inv4. p__Inv3\<le>N\<and>p__Inv4\<le>N\<and>p__Inv3~=p__Inv4\<and>f=inv__3  p__Inv3 p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__4  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__5  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__6  p__Inv4) \<or>
 (f=inv__7  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__8  p__Inv0) \<or>
-(\<exists> p__Inv0 p__Inv1. p__Inv0\<le>N\<and>p__Inv1\<le>N\<and>p__Inv0~=p__Inv1\<and>f=inv__9  p__Inv0 p__Inv1) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__8  p__Inv4) \<or>
+(\<exists> p__Inv3 p__Inv4. p__Inv3\<le>N\<and>p__Inv4\<le>N\<and>p__Inv3~=p__Inv4\<and>f=inv__9  p__Inv3 p__Inv4) \<or>
 (f=inv__10  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__11  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__12  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__13  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__14  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__15  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__11  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__12  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__13  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__14  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__15  p__Inv4) \<or>
 (f=inv__16  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__17  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__18  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__17  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__18  p__Inv4) \<or>
 (f=inv__19  ) \<or>
 (f=inv__20  ) \<or>
 (f=inv__21  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__22  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__23  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__24  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__22  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__23  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__24  p__Inv4) \<or>
 (f=inv__25  ) \<or>
 (f=inv__26  ) \<or>
 (f=inv__27  ) \<or>
@@ -1184,7 +1204,7 @@ definition invariants::"nat \<Rightarrow> formula set" where [simp]:
 (f=inv__36  ) \<or>
 (f=inv__37  ) \<or>
 (f=inv__38  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__39  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__39  p__Inv4) \<or>
 (f=inv__40  ) \<or>
 (f=inv__41  ) \<or>
 (f=inv__42  ) \<or>
@@ -1197,108 +1217,112 @@ definition invariants::"nat \<Rightarrow> formula set" where [simp]:
 (f=inv__49  ) \<or>
 (f=inv__50  ) \<or>
 (f=inv__51  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__52  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__52  p__Inv4) \<or>
 (f=inv__53  ) \<or>
 (f=inv__54  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__55  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__55  p__Inv4) \<or>
 (f=inv__56  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__57  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__58  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__59  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__60  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__61  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__57  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__58  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__59  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__60  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__61  p__Inv4) \<or>
 (f=inv__62  ) \<or>
 (f=inv__63  ) \<or>
 (f=inv__64  ) \<or>
 (f=inv__65  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__66  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__66  p__Inv4) \<or>
 (f=inv__67  ) \<or>
 (f=inv__68  ) \<or>
 (f=inv__69  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__70  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__70  p__Inv4) \<or>
 (f=inv__71  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__72  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__73  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__72  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__73  p__Inv4) \<or>
 (f=inv__74  ) \<or>
 (f=inv__75  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__76  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__77  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__78  p__Inv0) \<or>
-(\<exists> p__Inv0 p__Inv1. p__Inv0\<le>N\<and>p__Inv1\<le>N\<and>p__Inv0~=p__Inv1\<and>f=inv__79  p__Inv0 p__Inv1) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__80  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__81  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__82  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__83  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__84  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__85  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__76  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__77  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__78  p__Inv4) \<or>
+(\<exists> p__Inv3 p__Inv4. p__Inv3\<le>N\<and>p__Inv4\<le>N\<and>p__Inv3~=p__Inv4\<and>f=inv__79  p__Inv3 p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__80  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__81  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__82  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__83  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__84  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__85  p__Inv4) \<or>
 (f=inv__86  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__87  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__88  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__89  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__87  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__88  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__89  p__Inv4) \<or>
 (f=inv__90  ) \<or>
 (f=inv__91  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__92  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__92  p__Inv4) \<or>
 (f=inv__93  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__94  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__94  p__Inv4) \<or>
 (f=inv__95  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__96  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__96  p__Inv4) \<or>
 (f=inv__97  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__98  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__99  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__100  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__101  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__98  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__99  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__100  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__101  p__Inv4) \<or>
 (f=inv__102  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__103  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__104  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__103  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__104  p__Inv4) \<or>
 (f=inv__105  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__106  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__107  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__106  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__107  p__Inv4) \<or>
 (f=inv__108  ) \<or>
-(\<exists> p__Inv0 p__Inv1. p__Inv0\<le>N\<and>p__Inv1\<le>N\<and>p__Inv0~=p__Inv1\<and>f=inv__109  p__Inv0 p__Inv1) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__110  p__Inv0) \<or>
-(\<exists> p__Inv0 p__Inv1. p__Inv0\<le>N\<and>p__Inv1\<le>N\<and>p__Inv0~=p__Inv1\<and>f=inv__111  p__Inv0 p__Inv1) \<or>
-(\<exists> p__Inv0 p__Inv1. p__Inv0\<le>N\<and>p__Inv1\<le>N\<and>p__Inv0~=p__Inv1\<and>f=inv__112  p__Inv0 p__Inv1) \<or>
-(\<exists> p__Inv0 p__Inv1. p__Inv0\<le>N\<and>p__Inv1\<le>N\<and>p__Inv0~=p__Inv1\<and>f=inv__113  p__Inv0 p__Inv1) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__114  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__115  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__116  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__117  p__Inv0) \<or>
+(\<exists> p__Inv3 p__Inv4. p__Inv3\<le>N\<and>p__Inv4\<le>N\<and>p__Inv3~=p__Inv4\<and>f=inv__109  p__Inv3 p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__110  p__Inv4) \<or>
+(\<exists> p__Inv3 p__Inv4. p__Inv3\<le>N\<and>p__Inv4\<le>N\<and>p__Inv3~=p__Inv4\<and>f=inv__111  p__Inv3 p__Inv4) \<or>
+(\<exists> p__Inv3 p__Inv4. p__Inv3\<le>N\<and>p__Inv4\<le>N\<and>p__Inv3~=p__Inv4\<and>f=inv__112  p__Inv3 p__Inv4) \<or>
+(\<exists> p__Inv3 p__Inv4. p__Inv3\<le>N\<and>p__Inv4\<le>N\<and>p__Inv3~=p__Inv4\<and>f=inv__113  p__Inv3 p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__114  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__115  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__116  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__117  p__Inv4) \<or>
 (f=inv__118  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__119  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__120  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__119  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__120  p__Inv4) \<or>
 (f=inv__121  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__122  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__122  p__Inv4) \<or>
 (f=inv__123  ) \<or>
 (f=inv__124  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__125  p__Inv0) \<or>
-(\<exists> p__Inv0 p__Inv1. p__Inv0\<le>N\<and>p__Inv1\<le>N\<and>p__Inv0~=p__Inv1\<and>f=inv__126  p__Inv0 p__Inv1) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__127  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__125  p__Inv4) \<or>
+(\<exists> p__Inv3 p__Inv4. p__Inv3\<le>N\<and>p__Inv4\<le>N\<and>p__Inv3~=p__Inv4\<and>f=inv__126  p__Inv3 p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__127  p__Inv4) \<or>
 (f=inv__128  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__129  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__129  p__Inv4) \<or>
 (f=inv__130  ) \<or>
 (f=inv__131  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__132  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__133  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__134  p__Inv0) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__132  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__133  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__134  p__Inv4) \<or>
 (f=inv__135  ) \<or>
 (f=inv__136  ) \<or>
 (f=inv__137  ) \<or>
-(\<exists> p__Inv0 p__Inv1. p__Inv0\<le>N\<and>p__Inv1\<le>N\<and>p__Inv0~=p__Inv1\<and>f=inv__138  p__Inv0 p__Inv1) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__139  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__140  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__141  p__Inv0) \<or>
+(\<exists> p__Inv3 p__Inv4. p__Inv3\<le>N\<and>p__Inv4\<le>N\<and>p__Inv3~=p__Inv4\<and>f=inv__138  p__Inv3 p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__139  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__140  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__141  p__Inv4) \<or>
 (f=inv__142  ) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__143  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__144  p__Inv0) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__145  p__Inv0) \<or>
-(\<exists> p__Inv0 p__Inv1. p__Inv0\<le>N\<and>p__Inv1\<le>N\<and>p__Inv0~=p__Inv1\<and>f=inv__146  p__Inv0 p__Inv1) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__147  p__Inv0) \<or>
-(\<exists> p__Inv0 p__Inv1. p__Inv0\<le>N\<and>p__Inv1\<le>N\<and>p__Inv0~=p__Inv1\<and>f=inv__148  p__Inv0 p__Inv1) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__149  p__Inv0) \<or>
-(\<exists> p__Inv0 p__Inv1. p__Inv0\<le>N\<and>p__Inv1\<le>N\<and>p__Inv0~=p__Inv1\<and>f=inv__150  p__Inv0 p__Inv1) \<or>
-(\<exists> p__Inv0 p__Inv1. p__Inv0\<le>N\<and>p__Inv1\<le>N\<and>p__Inv0~=p__Inv1\<and>f=inv__151  p__Inv0 p__Inv1) \<or>
-(\<exists> p__Inv0. p__Inv0\<le>N\<and>f=inv__152  p__Inv0)
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__143  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__144  p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__145  p__Inv4) \<or>
+(\<exists> p__Inv3 p__Inv4. p__Inv3\<le>N\<and>p__Inv4\<le>N\<and>p__Inv3~=p__Inv4\<and>f=inv__146  p__Inv3 p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__147  p__Inv4) \<or>
+(\<exists> p__Inv3 p__Inv4. p__Inv3\<le>N\<and>p__Inv4\<le>N\<and>p__Inv3~=p__Inv4\<and>f=inv__148  p__Inv3 p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__149  p__Inv4) \<or>
+(\<exists> p__Inv3 p__Inv4. p__Inv3\<le>N\<and>p__Inv4\<le>N\<and>p__Inv3~=p__Inv4\<and>f=inv__150  p__Inv3 p__Inv4) \<or>
+(\<exists> p__Inv3 p__Inv4. p__Inv3\<le>N\<and>p__Inv4\<le>N\<and>p__Inv3~=p__Inv4\<and>f=inv__151  p__Inv3 p__Inv4) \<or>
+(\<exists> p__Inv4. p__Inv4\<le>N\<and>f=inv__152  p__Inv4)
 }"
+
+
+
+subsection{*Definitions of initial states*}
 
 definition initSpec0::"formula" where [simp]:
 "initSpec0  \<equiv> (eqn (IVar (Field (Field (Ident ''Sta'') ''Dir'') ''Pending'')) (Const false))"
