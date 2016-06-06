@@ -300,12 +300,17 @@ let minify_inv_desc inv =
 
 (* Minify inv by add useful components gradually *)
 let minify_inv_inc inv =
+  Prt.info (sprintf "to be minified: %s" (ToStr.Smv.form_act inv));
+  let ls = match inv with | AndList(fl) -> fl | _ -> [inv] in
+  let components = combination_all ls in
+  let _len = List.length components in
   let rec wrapper components =
     match components with
     | [] -> 
       Prt.error ("Not invariant: "^ToStr.Smv.form_act inv);
       raise Empty_exception
     | parts::components' ->
+      Prt.info (sprintf "minifing %d/%d" (_len - List.length components') _len);
       let piece = normalize (andList parts) ~types:(!type_defs) in
       let check_inv_res =
         let (_, pfs, _) = Generalize.form_act piece in
@@ -331,8 +336,6 @@ let minify_inv_inc inv =
       if check_inv_res then andList parts
       else begin wrapper components' end
   in
-  let ls = match inv with | AndList(fl) -> fl | _ -> [inv] in
-  let components = combination_all ls in
   wrapper components
 
 
@@ -678,7 +681,7 @@ let deal_with_case_3 crule cinv cons g =
       let params_str = String.concat (List.map ps ~f:cp_2_str) ~sep:", " in
       let inv_str = ToStr.Smv.form_act (concrete_prop_2_form cinv) in
       let guard_str = ToStr.Smv.form_act guard in
-      Prt.error (sprintf "\n\n%s, %s\nguard: %s\n%s\n" n params_str guard_str inv_str);
+      Prt.error (sprintf "\n\n%s, %s\nguard: %s\ninv: %s\n" n params_str guard_str inv_str);
       raise Empty_exception
   in
   let ConcreteProp(Prop(_, _, f), _) = causal_cinv in
@@ -703,6 +706,7 @@ let tabular_expans (Rule(_name, _, form, _), crule, _, assigns) ~cinv =
     |> List.map ~f:(fun (g, o) -> g, simplify o)
     |> List.filter ~f:(fun (g, _) -> is_satisfiable g)
   in
+  Prt.info (sprintf "rule: %s; inv: %s" _name (ToStr.Smv.form_act inv_inst));
   let rec deal_with_case obligations relations =
     match obligations with
     | [] -> relations

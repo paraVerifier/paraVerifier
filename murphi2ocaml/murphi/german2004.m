@@ -1,7 +1,7 @@
 
 const num_nodes: 3;		
-const num_addr:  0;		
-const num_data:  0;		
+const num_addr:  2;		
+const num_data:  1;		
 
 
 type opcode: enum {
@@ -31,9 +31,9 @@ type cache_state: enum {
 };
 
 
-type addr_type: 0..num_addr;
+type addr_type: 1..num_addr;
 
-type num_data_type: 0..num_data;
+type num_data_type: 1..num_data;
 
 type data_type: 
   record
@@ -113,7 +113,7 @@ type node_type:
 
 var
   node: array[node_id] of node_type;
-  auxdata: data_type;
+  auxdata: array [addr_type] of data_type;
 
 
 startstate "Init"
@@ -157,7 +157,7 @@ begin
 	  node[i].inchan[j].msg.source := 0;
 	  node[i].inchan[j].msg.dest := 0;
 	  node[i].inchan[j].msg.op := op_invalid;
-	  node[i].inchan[j].msg.addr := 0;
+	  node[i].inchan[j].msg.addr := 1;
 	  for k: num_data_type do
 	    node[i].inchan[j].msg.data.values[k] := false;
 	  endfor;
@@ -166,15 +166,17 @@ begin
 	  node[i].outchan[j].msg.source := 0;
 	  node[i].outchan[j].msg.dest := 0;
 	  node[i].outchan[j].msg.op := op_invalid;
-	  node[i].outchan[j].msg.addr := 0;
+	  node[i].outchan[j].msg.addr := 1;
 	  for k: num_data_type do
 	    node[i].outchan[j].msg.data.values[k] := false;
 	  endfor;
 	  node[i].outchan[j].valid := false;
 	endfor;
   endfor;
-  for i: num_data_type do
-    auxdata.values[i] := false;
+  for i: addr_type do
+    for j: num_data_type do
+      auxdata[i].values[j] := false;
+    endfor;
   endfor;
 endstartstate;
 
@@ -204,7 +206,7 @@ begin
   node[source].outchan[ch].msg.source := 0;
   node[source].outchan[ch].msg.dest := 0;
   node[source].outchan[ch].msg.op := op_invalid;
-  node[source].outchan[ch].msg.addr := 0;
+  node[source].outchan[ch].msg.addr := 1;
   for k: num_data_type do
 	node[source].outchan[ch].msg.data.values[k] := false;
   endfor;
@@ -231,11 +233,7 @@ rule "`client' generates new `req' for `addr'"
   & !node[client].outchan[channel1].valid ==>
 begin
     node[client].outchan[channel1].msg.source := client;
-	if addr = 0 then
-      node[client].outchan[channel1].msg.dest   := 0;
-	else
-      node[client].outchan[channel1].msg.dest   := 1;
-	endif;
+    node[client].outchan[channel1].msg.dest   := 0;
 	if req = req_read_shared then
 	  node[client].outchan[channel1].msg.op     := read_shared;
 	elsif req = req_read_exclusive then
@@ -273,7 +271,7 @@ begin
   node[client].inchan[channel2].msg.source := 0;
   node[client].inchan[channel2].msg.dest := 0;
   node[client].inchan[channel2].msg.op := op_invalid;
-  node[client].inchan[channel2].msg.addr := 0;
+  node[client].inchan[channel2].msg.addr := 1;
   for k: num_data_type do
 	node[client].inchan[channel2].msg.data.values[k] := false;
   endfor;
@@ -382,7 +380,7 @@ begin
 	  node[client].inchan[channel2].msg.source := 0;
 	  node[client].inchan[channel2].msg.dest := 0;
 	  node[client].inchan[channel2].msg.op := op_invalid;
-	  node[client].inchan[channel2].msg.addr := 0;
+	  node[client].inchan[channel2].msg.addr := 1;
 	  for k: num_data_type do
 	    node[client].inchan[channel2].msg.data.values[k] := false;
 	  endfor;
@@ -407,7 +405,7 @@ rule "`client' stores data in cache for `addr'"
   & node[client].cache[addr].state = cache_exclusive ==>
 begin
     node[client].cache[addr].data.values[data_n]  := data;
-    auxdata.values[data_n] := data;    
+    auxdata[addr].values[data_n] := data;    
 endrule;
 endruleset;
 
@@ -501,7 +499,7 @@ begin
 	  node[home].inchan[channel1].msg.source := 0;
 	  node[home].inchan[channel1].msg.dest := 0;
 	  node[home].inchan[channel1].msg.op := op_invalid;
-	  node[home].inchan[channel1].msg.addr := 0;
+	  node[home].inchan[channel1].msg.addr := 1;
 	  for k: num_data_type do
 	    node[home].inchan[channel1].msg.data.values[k] := false;
 	  endfor;
@@ -582,7 +580,7 @@ begin
 	  node[home].inchan[channel3].msg.source := 0;
 	  node[home].inchan[channel3].msg.dest := 0;
 	  node[home].inchan[channel3].msg.op := op_invalid;
-	  node[home].inchan[channel3].msg.addr := 0;
+	  node[home].inchan[channel3].msg.addr := 1;
 	  for k: num_data_type do
 	    node[home].inchan[channel3].msg.data.values[k] := false;
 	  endfor;
@@ -649,7 +647,7 @@ endruleset;
 ruleset client: node_id; addr: addr_type; d: num_data_type do
 invariant "data consistency property"
   node[client].cache[addr].state != cache_invalid -> 
-  node[client].cache[addr].data.values[d] = auxdata.values[d]
+  node[client].cache[addr].data.values[d] = auxdata[addr].values[d]
 endruleset;
 
 
