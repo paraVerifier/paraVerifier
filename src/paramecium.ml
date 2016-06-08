@@ -75,6 +75,7 @@ type exp =
   | Var of var
   | Param of paramref
   | Ite of formula * exp * exp
+  | UIF of string * exp list
 (** Boolean expressions, including
     + Boolean constants, Chaos as True, Miracle as false
     + Equation expression
@@ -84,6 +85,7 @@ type exp =
 and formula =
   | Chaos
   | Miracle
+  | UIP of string * exp list
   | Eqn of exp * exp
   | Neg of formula
   | AndList of formula list
@@ -95,9 +97,11 @@ let const c = Const c
 let var v = Var v
 let param paramref = Param(paramref)
 let ite f e1 e2 = Ite(f, e1, e2)
+let uif  n el = UIF(n, el)
 
 let chaos = Chaos
 let miracle = Miracle
+let uip n el = UIP(n, el)
 let eqn e1 e2 = Eqn(e1, e2)
 let neg f = Neg f
 let andList fs = AndList fs
@@ -267,11 +271,13 @@ let rec apply_exp exp ~p =
   | Param(pr) -> param (apply_paramref pr ~p)
   | Const(_) -> exp
   | Ite(f, e1, e2) -> ite (apply_form f ~p) (apply_exp e1 ~p) (apply_exp e2 ~p)
+  | UIF(n, el) -> uif n (List.map el ~f:(apply_exp ~p))
 (** Apply formula with param *)
 and apply_form f ~p =
   match f with
   | Chaos
   | Miracle -> f
+  | UIP(n, el) -> uip n (List.map el ~f:(apply_exp ~p))
   | Eqn(e1, e2) -> eqn (apply_exp e1 ~p) (apply_exp e2 ~p)
   | Neg(form) -> neg (apply_form form ~p)
   | AndList(fl) -> andList (List.map fl ~f:(apply_form ~p))
@@ -354,11 +360,13 @@ module VarNames = struct
     | Param(_) -> of_list []
     | Var(v) -> of_var v
     | Ite(f, e1, e2) -> union_list [of_form f; of_exp e1; of_exp e2]
+    | UIF(n, el) -> union_list (List.map el ~f:of_exp)
   (** Names of formula *)
   and of_form f =
     match f with
     | Chaos
     | Miracle -> of_list []
+    | UIP(n, el) -> union_list (List.map el ~f:of_exp)
     | Eqn(e1, e2) -> union_list [of_exp e1; of_exp e2]
     | Neg(form) -> of_form form
     | AndList(fl)
@@ -414,11 +422,13 @@ module VarNamesWithParam = struct
     | Param(_) -> of_list []
     | Var(v) -> of_var v
     | Ite(f, e1, e2) -> union_list [of_form ~of_var f; of_exp ~of_var e1; of_exp ~of_var e2]
+    | UIF(n, el) -> union_list (List.map el ~f:(of_exp ~of_var))
   (** Names of formula *)
   and of_form ~of_var f =
     match f with
     | Chaos
     | Miracle -> of_list []
+    | UIP(n, el) -> union_list (List.map el ~f:(of_exp ~of_var))
     | Eqn(e1, e2) -> union_list [of_exp ~of_var e1; of_exp ~of_var e2]
     | Neg(form) -> of_form ~of_var form
     | AndList(fl)

@@ -239,6 +239,13 @@ let rec exp_eval exp ~assigns =
         in
         List.map (analyze_exp e) ~f:(fun (g, e) -> simplify g, e)
     )
+  | UIF(n, el) ->
+    let evaled = List.map el ~f:(exp_eval ~assigns) in
+    let mixed = cartesian_product evaled in
+    List.map mixed ~f:(fun ls ->
+      let guards, exps = List.unzip ls in
+      andList guards, uif n exps
+    )
   | Ite(f, e1, e2) -> raise Empty_exception
 (* Evaluate formula with assignments
     Result has format (condition, form)
@@ -247,6 +254,13 @@ and form_eval form ~assigns =
   match form with
   | Chaos
   | Miracle -> [(chaos, form)]
+  | UIP(n, el) ->
+    let evaled = List.map el ~f:(exp_eval ~assigns) in
+    let mixed = cartesian_product evaled in
+    List.map mixed ~f:(fun ls ->
+      let guards, exps = List.unzip ls in
+      andList guards, uip n exps
+    )
   | Eqn(e1, e2) ->
     let res1 = exp_eval e1 ~assigns in
     let res2 = exp_eval e2 ~assigns in
@@ -619,12 +633,14 @@ module RenameParam = struct
     | Var(v) -> var (var_act v)
     | Param(pr) -> param (paramref_act pr)
     | Ite(f, e1, e2) -> ite (form_act f) (exp_act e1) (exp_act e2)
+    | UIF(n, el) -> uif n (List.map el ~f:exp_act)
   and form_act ?(pfs_rule=(!pfs_rule_ref)) ?(pfs_prop=(!pfs_prop_ref)) f =
     pfs_rule_ref := pfs_rule;
     pfs_prop_ref := pfs_prop;
     match f with
     | Chaos
     | Miracle -> f
+    | UIP(n, el) -> uip n (List.map el ~f:exp_act)
     | Eqn(e1, e2) -> eqn (exp_act e1) (exp_act e2)
     | Neg(g) -> neg (form_act g)
     | AndList(fl) -> andList (List.map fl ~f:form_act)

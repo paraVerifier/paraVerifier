@@ -24,6 +24,8 @@ let rec eliminate_imply_neg ?(eli_eqn=false)  form =
   match form with
   | Chaos
   | Miracle
+  | UIP(_)
+  | Neg(UIP(_))
   | Eqn(_) -> form
   | Neg(Chaos) -> miracle
   | Neg(Miracle) -> chaos
@@ -50,6 +52,8 @@ let flat_and_to_list form =
     | Chaos
     | Miracle
     | Eqn(_)
+    | UIP(_)
+    | Neg(UIP(_))
     | Neg(Eqn(_)) -> [form]
     | AndList([]) -> [chaos]
     | AndList([f]) -> [f]
@@ -76,6 +80,8 @@ let flat_or_to_list form =
     | Chaos
     | Miracle
     | Eqn(_)
+    | UIP(_)
+    | Neg(UIP(_))
     | Neg(Eqn(_))
     | AndList(_) -> [form]
     | OrList(fl) -> List.concat (List.map fl ~f:wrapper)
@@ -95,6 +101,8 @@ let rec remove_inner_andList form =
   | Chaos
   | Miracle
   | Eqn(_)
+  | UIP(_)
+  | Neg(UIP(_))
   | Neg(Eqn(_)) -> [form]
   | AndList(fl) -> List.concat (List.map fl ~f:remove_inner_andList)
   | OrList(fl) -> [orList (List.concat (List.map fl ~f:remove_inner_orList))]
@@ -105,6 +113,8 @@ and remove_inner_orList form =
   | Chaos
   | Miracle
   | Eqn(_)
+  | UIP(_)
+  | Neg(UIP(_))
   | Neg(Eqn(_)) -> [form]
   | AndList(fl) -> [andList (List.concat (List.map fl ~f:remove_inner_andList))]
   | OrList(fl) -> List.concat (List.map fl ~f:remove_inner_orList)
@@ -130,6 +140,7 @@ and dedup form =
   match form with
   | Chaos
   | Miracle
+  | UIP(_)
   | Eqn(_) -> form
   | Neg(f) -> neg (dedup f)
   | AndList(fl) -> andList (forms_dedup fl)
@@ -145,6 +156,8 @@ let simplify ?(eli_eqn=false) form =
     | Miracle -> miracle
     | Neg(Chaos) -> miracle
     | Neg(Miracle) -> chaos
+    | UIP(_)
+    | Neg(UIP(_))
     | Eqn(_)
     | Neg(Eqn(_)) ->
       if is_tautology form then chaos

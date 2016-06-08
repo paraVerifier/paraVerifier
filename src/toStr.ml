@@ -50,6 +50,7 @@ module Debug = struct
     | Param(pr) -> paramref_act pr
     | Ite(f, e1, e2) ->
       sprintf "ite (%s) (%s) (%s)" (form_act f) (exp_act e1) (exp_act e2)
+    | UIF(n, el) -> sprintf "(%s)" (String.concat ~sep:n (List.map el ~f:exp_act))
   (** Translate formula to Debug string
 
       @param form the formula to be translated
@@ -59,6 +60,7 @@ module Debug = struct
     match form with
     | Chaos -> "TRUE"
     | Miracle -> "FALSE"
+    | UIP(n, el) -> sprintf "(%s)" (String.concat ~sep:n (List.map el ~f:exp_act))
     | Eqn(e1, e2) -> sprintf "(%s = %s)" (exp_act e1) (exp_act e2)
     | Neg(form) -> sprintf "(!%s)" (form_act form)
     | AndList(fl) ->
@@ -182,12 +184,19 @@ module Smt2 = struct
     | Var(v) -> var_act v
     | Param(Paramfix(_, _, c)) -> const_act c
     | Param(Paramref _) -> raise Unexhausted_inst
-    | Ite(f, e1, e2) -> sprintf "ite (%s) (%s) (%s)" (form_act f) (exp_act e1) (exp_act e2)
+    | Ite(f, e1, e2) ->
+      sprintf "(ite %s %s %s)" (form_act f) (exp_act e1) (exp_act e2)
+    | UIF(n, el) ->
+      let els = List.map el ~f:exp_act in
+      List.reduce_exn els ~f:(fun res x -> sprintf "(%s %s %s)" n res x)
   (* Translate formula to smt2 string *)
   and form_act form =
     match form with
     | Chaos -> "true"
     | Miracle -> "false"
+    | UIP(n, el) ->
+      let els = List.map el ~f:exp_act in
+      List.reduce_exn els ~f:(fun res x -> sprintf "(%s %s %s)" n res x)
     | Eqn(e1, e2) -> sprintf "(= %s %s)" (exp_act e1) (exp_act e2)
     | Neg(form) -> sprintf "(not %s)" (form_act form)
     | AndList(fl) ->
@@ -322,6 +331,7 @@ module Smv = struct
     | Ite(f, e1, e2) ->
       let lower = (!strc_to_lower) in
       sprintf "case\n%s : %s; TRUE : %s;\nesac" (form_act ~lower f) (exp_act e1) (exp_act e2)
+    | UIF(n, el) -> sprintf "(%s)" (String.concat ~sep:n (List.map el ~f:exp_act))
   (** Translate formula to smv string
 
       @param form the formula to be translated
@@ -332,6 +342,7 @@ module Smv = struct
     match form with
     | Chaos -> "TRUE"
     | Miracle -> "FALSE"
+    | UIP(n, el) -> sprintf "(%s)" (String.concat ~sep:n (List.map el ~f:exp_act))
     | Eqn(e1, e2) -> sprintf "(%s = %s)" (exp_act e1) (exp_act e2)
     | Neg(form) -> sprintf "(!%s)" (form_act ~lower form)
     | AndList(fl) ->

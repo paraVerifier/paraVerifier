@@ -152,10 +152,12 @@ let rec exp_act exp =
   | Param(pr) -> paramref_act pr
   | Ite(f, e1, e2) ->
     sprintf "(%s ? %s : %s)" (form_act f) (exp_act e1) (exp_act e2)
+  | UIF(n, el) -> sprintf "(%s)" (String.concat ~sep:n (List.map el ~f:exp_act))
 and form_act form =
   match form with
   | Chaos -> "true"
   | Miracle -> "false"
+  | UIP(n, el) -> sprintf "(%s)" (String.concat ~sep:n (List.map el ~f:exp_act))
   | Eqn(e1, e2) -> sprintf "(%s = %s)" (exp_act e1) (exp_act e2)
   | Neg(form) -> sprintf "(!%s)" (form_act form)
   | AndList(fl) ->

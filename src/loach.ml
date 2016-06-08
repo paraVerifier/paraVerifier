@@ -31,9 +31,11 @@ type exp =
   | Var of var
   | Param of paramref
   | Ite of formula * exp * exp
+  | UIF of string * exp list
 and formula =
   | Chaos
   | Miracle
+  | UIP of string * exp list
   | Eqn of exp * exp
   | Neg of formula
   | AndList of formula list
@@ -47,9 +49,11 @@ let const c = Const c
 let var v = Var v
 let param paramref = Param(paramref)
 let ite f e1 e2 = Ite(f, e1, e2)
+let uif  n el = UIF(n, el)
 
 let chaos = Chaos
 let miracle = Miracle
+let uip n el = UIP(n, el)
 let eqn e1 e2 = Eqn(e1, e2)
 let neg f = Neg f
 let andList fs = AndList fs
@@ -105,10 +109,12 @@ let rec apply_exp e ~p =
   | Var(x) -> var (apply_array x ~p)
   | Param(pr) -> param (apply_paramref pr ~p)
   | Ite(f, e1, e2) -> ite (apply_form f ~p) (apply_exp e1 ~p) (apply_exp e2 ~p)
+  | UIF(n, el) -> uif n (List.map el ~f:(apply_exp ~p))
 and apply_form f ~p =
   match f with
   | Chaos
   | Miracle -> f
+  | UIP(n, el) -> uip n (List.map el ~f:(apply_exp ~p))
   | Eqn(e1, e2) -> eqn (apply_exp e1 ~p) (apply_exp e2 ~p)
   | Neg(form) -> neg (apply_form form ~p)
   | AndList(fl) -> andList (List.map fl ~f:(apply_form ~p))
@@ -308,9 +314,11 @@ let rec eliminate_imply_neg form =
   match form with
   | Chaos
   | Miracle
+  | UIP(_)
   | Eqn(_) -> form
   | Neg(Chaos) -> miracle
   | Neg(Miracle) -> chaos
+  | Neg(UIP(_))
   | Neg(Eqn(_)) -> form
   | Neg(Neg(f)) -> eliminate_imply_neg f
   | Neg(AndList(fl)) -> eliminate_imply_neg (orList (List.map fl ~f:neg))
@@ -331,6 +339,7 @@ let rec remove_inner_andList form =
   | Chaos
   | Miracle
   | Eqn(_)
+  | UIP(_)
   | Neg(Eqn(_)) -> [form]
   | AndList(fl) -> List.concat (List.map fl ~f:remove_inner_andList)
   | OrList(fl) -> [orList (List.concat (List.map fl ~f:remove_inner_orList))]
@@ -343,6 +352,7 @@ and remove_inner_orList form =
   | Chaos
   | Miracle
   | Eqn(_)
+  | UIP(_)
   | Neg(Eqn(_)) -> [form]
   | AndList(fl) -> [andList (List.concat (List.map fl ~f:remove_inner_andList))]
   | OrList(fl) -> List.concat (List.map fl ~f:remove_inner_orList)
@@ -358,6 +368,8 @@ let simplify form =
     | Chaos -> chaos
     | Miracle -> miracle
     | Eqn(_)
+    | UIP(_)
+    | Neg(UIP(_))
     | Neg(Eqn(_)) -> form
     | AndList(_) ->
       let simplified = List.map (remove_inner_andList form) ~f:wrapper in
@@ -432,10 +444,12 @@ module Trans = struct
     | Param(pr) -> Paramecium.param pr
     | Ite(f, e1, e2) ->
       Paramecium.ite (trans_formula ~types f) (trans_exp ~types e1) (trans_exp ~types e2)
+    | UIF(n, el) -> Paramecium.uif n (List.map el ~f:(trans_exp ~types))
   and trans_formula ~types form =
     match form with
     | Chaos -> Paramecium.chaos
     | Miracle -> Paramecium.miracle
+    | UIP(n, el) -> Paramecium.uip n (List.map el ~f:(trans_exp ~types))
     | Eqn(e1, e2) -> Paramecium.eqn (trans_exp ~types e1) (trans_exp ~types e2)
     | Neg(f) -> Paramecium.neg (trans_formula ~types f)
     | AndList(fl) -> Paramecium.andList (List.map fl ~f:(trans_formula ~types))
@@ -543,11 +557,13 @@ module VarNamesWithParam = struct
     | Param(_) -> of_list []
     | Var(v) -> (!of_var_ref) v
     | Ite(f, e1, e2) -> union_list [of_form ~types f; of_exp ~types e1; of_exp ~types e2]
+    | UIF(n, el) -> union_list (List.map el ~f:(of_exp ~types))
   (** Names of formula *)
   and of_form ~types f =
     match f with
     | Chaos
     | Miracle -> of_list []
+    | UIP(n, el) -> union_list (List.map el ~f:(of_exp ~types))
     | Eqn(e1, e2) -> union_list [of_exp ~types e1; of_exp ~types e2]
     | Neg(form) -> of_form ~types form
     | AndList(fl)
@@ -681,13 +697,11 @@ module ToSmv = struct
 
 
 
-  (* TODO *)
-  (* 为了赶进度，只好先这样限制参数范围了 *)
   let limit_params_in_typedef typedef =
     let Enum(name, consts) = typedef in
     enum name (List.filter consts ~f:(fun c ->
       match c with
-      | Intc(i) -> i <= 3
+      | Intc(i) -> i <= 30
       | _ -> true
     ))
 
@@ -799,10 +813,12 @@ module PartParam = struct
         | Paramfix(_, _, c) -> const c
       end
     | Ite(f, e1, e2) -> ite (apply_form f ~p) (apply_exp e1 ~p) (apply_exp e2 ~p)
+    | UIF(n, el) -> uif n (List.map el ~f:(apply_exp ~p))
   and apply_form f ~p =
     match f with
     | Chaos
     | Miracle -> f
+    | UIP(n, el) -> uip n (List.map el ~f:(apply_exp ~p))
     | Eqn(e1, e2) -> eqn (apply_exp e1 ~p) (apply_exp e2 ~p)
     | Neg(form) -> neg (apply_form form ~p)
     | AndList(fl) -> andList (List.map fl ~f:(apply_form ~p))

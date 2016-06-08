@@ -73,6 +73,7 @@ type exp =
   | Var of var
   | Param of paramref
   | Ite of formula * exp * exp
+  | UIF of string * exp list
 (** Boolean expressions, including
     + Boolean constants, Chaos as True, Miracle as false
     + Equation expression
@@ -82,6 +83,7 @@ type exp =
 and formula =
   | Chaos
   | Miracle
+  | UIP of string * exp list
   | Eqn of exp * exp
   | Neg of formula
   | AndList of formula list
@@ -93,9 +95,11 @@ val const : const -> exp
 val var : var -> exp
 val param : paramref -> exp
 val ite : formula -> exp -> exp -> exp
+val uif : string -> exp list -> exp
 
 val chaos : formula
 val miracle : formula
+val uip : string -> exp list -> formula
 val eqn : exp -> exp -> formula
 val neg : formula -> formula
 val andList : formula list -> formula

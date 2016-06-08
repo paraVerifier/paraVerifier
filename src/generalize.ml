@@ -66,7 +66,7 @@ let var_act (Arr(ls)) pds pfs =
   (pds', pfs', arr ls')
 
 (** Convert exp *)
-let exp_act e pds pfs =
+let rec exp_act e pds pfs =
   match e with
   | Const(_) -> (pds, pfs, e)
   | Var(v) ->
@@ -75,6 +75,9 @@ let exp_act e pds pfs =
   | Param(pr) ->
     let (pds', pfs', pr') = paramref_act pr pds pfs in
     (pds', pfs', param pr')
+  | UIF(n, el) ->
+    let (pds', pfs', el') = components_act el pds pfs ~f:exp_act in
+    (pds', pfs', uif n el')
   | Ite(_, _, _) -> raise Empty_exception
 
 (** Convert formula *)
@@ -84,6 +87,9 @@ let form_act ?(rename=true) f =
     match f with
     | Chaos
     | Miracle -> (pds, pfs, f)
+    | UIP(n, el) ->
+      let (pds', pfs', el') = components_act el pds pfs ~f:exp_act in
+      (pds', pfs', uip n el')
     | Eqn(e1, e2) ->
       let (pds1, pfs1, e1') = exp_act e1 pds pfs in
       let (pds2, pfs2, e2') = exp_act e2 pds1 pfs1 in

@@ -19,15 +19,16 @@ val record_def : string -> paramdef list-> vardef list -> vardef list
 (** Record *)
 val record : var list -> var
 
-
 type exp =
   | Const of const
   | Var of var
   | Param of paramref
   | Ite of formula * exp * exp
+  | UIF of string * exp list
 and formula =
   | Chaos
   | Miracle
+  | UIP of string * exp list
   | Eqn of exp * exp
   | Neg of formula
   | AndList of formula list
@@ -41,9 +42,11 @@ val const : const -> exp
 val var : var -> exp
 val param : paramref -> exp
 val ite : formula -> exp -> exp -> exp
+val uif : string -> exp list -> exp
 
 val chaos : formula
 val miracle : formula
+val uip : string -> exp list -> formula
 val eqn : exp -> exp -> formula
 val neg : formula -> formula
 val andList : formula list -> formula

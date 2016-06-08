@@ -176,10 +176,20 @@ let rec exp_act e =
   | Param(pr) -> sprintf "(Const (index %s))" (paramref_to_index pr)
   | Ite(f, e1, e2) -> sprintf "(iteForm %s %s %s)"
     (formula_act f) (exp_act e1) (exp_act e2)
+  | UIF(n, el) ->
+    let els = List.fold el ~init:"[]" ~f:(fun res x ->
+      sprintf "%s#%s" (exp_act x) res
+    ) in
+    sprintf "(UIF ''%s'' (%s))" n els
 and formula_act f =
   match f with
   | Chaos -> "chaos"
   | Miracle -> "miracle"
+  | UIP(n, el) ->
+    let els = List.fold el ~init:"[]" ~f:(fun res x ->
+      sprintf "%s#%s" (exp_act x) res
+    ) in
+    sprintf "(UIP ''%s'' (%s))" n els
   | Eqn(e1, e2) -> sprintf "(eqn %s %s)" (exp_act e1) (exp_act e2)
   | Neg(g) -> sprintf "(neg %s)" (formula_act g)
   | AndList(fl) -> (
@@ -404,17 +414,19 @@ module ToIsabelle = struct
       )))
     ))
   
-  let exp_act e =
+  let rec exp_act e =
     match e with
     | Paramecium.Const(c) -> const_act c
     | Var(v) -> var_act v
     | Param(pr) -> paramref_act pr
     | Ite(_) -> raise Empty_exception
+    | UIF(n, el) -> String.concat ~sep:n (List.map el ~f:exp_act)
 
   let rec form_act f =
     match f with
     | Paramecium.Chaos -> "True"
     | Miracle -> "False"
+    | UIP(n, el) -> String.concat ~sep:n (List.map el ~f:exp_act)
     | Eqn(e1, e2) -> sprintf "%s=%s" (exp_act e1) (exp_act e2)
     | Neg(f) -> sprintf "\\<not>(%s)" (form_act f)
     | AndList(fl) ->
