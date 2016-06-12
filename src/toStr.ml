@@ -331,7 +331,7 @@ module Smv = struct
     | Ite(f, e1, e2) ->
       let lower = (!strc_to_lower) in
       sprintf "case\n%s : %s; TRUE : %s;\nesac" (form_act ~lower f) (exp_act e1) (exp_act e2)
-    | UIF(n, el) -> sprintf "(%s)" (String.concat ~sep:n (List.map el ~f:exp_act))
+    | UIF(n, el) -> sprintf "(%s)" (String.concat ~sep:(" "^n^" ") (List.map el ~f:exp_act))
   (** Translate formula to smv string
 
       @param form the formula to be translated
