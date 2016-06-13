@@ -3,6 +3,8 @@ open Core.Std
 open Utils
 open Client
 
+let confirm_with_mu =  ref false
+
 let open_debug () = debug_switch := true
 
 let set_smv_server_host host () =
@@ -35,6 +37,7 @@ let command program =
     Command.Spec.(
       empty
       +> flag "-g" no_arg ~doc:"open debuG mode"
+      +> flag "-C" no_arg ~doc:"Confirm inv checked by NuSMV through Murphi"
       +> flag "-vh" (optional string) ~doc:"set ip address as Host of smV server"
       +> flag "-vp" (optional int) ~doc:"set Port of smV server"
       +> flag "-vbh" (optional string) ~doc:"set ip address as Host of smV Bmc server"
@@ -44,10 +47,15 @@ let command program =
       +> flag "-mh" (optional string) ~doc:"set ip address as Host of Murphi server"
       +> flag "-mp" (optional int) ~doc:"set Port of Murphi server"
     )
-    (fun g vh vp vbh vbp th tp mh mp () ->
+    (fun g c vh vp vbh vbp th tp mh mp () ->
       begin
         match g with
         | true -> open_debug ()
+        | false  -> ()
+      end;
+      begin
+        match c with
+        | true -> confirm_with_mu := true
         | false  -> ()
       end;
       begin
