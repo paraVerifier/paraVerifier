@@ -26,6 +26,7 @@ let record_def name paramdefs vardefs =
 let record vars =
   arr (List.concat (List.map vars ~f:(fun (Arr(ls)) -> ls)))
 
+
 type exp =
   | Const of const
   | Var of var
@@ -76,6 +77,31 @@ let parallel statements = Parallel statements
 let ifStatement form statement = IfStatement(form, statement)
 let ifelseStatement form s1 s2 = IfelseStatement(form, s1, s2)
 let forStatement s paramdefs = ForStatement(s, paramdefs)
+
+
+
+let write vardef exp_i exp_v types =
+  let Arrdef([(n, [Paramdef(pn, tn)])], _) = vardef in
+  forStatement (
+    ifStatement (
+      eqn (param (paramref pn)) exp_i
+    ) (
+      assign ((arr [(n, [paramref pn])])) (exp_v)
+    )
+  ) [paramdef pn tn]
+
+
+let read vardef exp_i types =
+  let Arrdef([(n, [Paramdef(pn, tn)])], _) = vardef in
+  let indice = name2type ~tname:tn ~types in
+  let values = List.map indice ~f:(fun c -> var (arr [(n, [paramfix pn tn c])])) in
+  List.reduce_exn values ~f:(fun res x ->
+    let Var(Arr([(_, [Paramfix(_, _, c)])])) = x in
+    ite (eqn exp_i (const c)) x (res)
+  )
+
+
+
 
 (** Represents rules which consists of guard and assignments
     + Rule: name, parameters, guard, assignments

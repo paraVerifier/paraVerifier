@@ -65,6 +65,8 @@ type t = {
 }
 with sexp
 
+val pre_cond : Paramecium.formula -> (Paramecium.var * Paramecium.exp) list ->
+  (Paramecium.formula * Paramecium.formula) list
 val get_rname_of_crname : string -> string
 val concrete_prop_2_form : concrete_prop -> Paramecium.formula
 val form_2_concreate_prop : ?id:int -> ?rename:bool -> Paramecium.formula -> concrete_prop

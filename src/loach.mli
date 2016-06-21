@@ -74,6 +74,9 @@ val ifStatement : formula -> statement -> statement
 val ifelseStatement : formula -> statement -> statement -> statement
 val forStatement : statement -> paramdef list -> statement
 
+val write : vardef -> exp -> exp -> typedef list -> statement
+val read : vardef -> exp -> typedef list -> exp
+
 type prop =
   | Prop of string * paramdef list * formula
 with sexp
