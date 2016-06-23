@@ -20,6 +20,7 @@ var pop:boolean;*/
 var tail: depth_type;
 var empty: boolean;
 var mem:array[depth_type] of value_type;
+var tmp: array[depth_type] of value_type;
  
 
     
@@ -42,6 +43,9 @@ if (rst) then
 elsif (push & !(tail = LAST))   then   
 	for i:depth_type do
 	  mem[i] := (i=0)?dataIn : mem[i - 1]; 
+      if i > 0 then
+        tmp[i - 1] := mem[i];
+      endif;
 	endfor;
 	if empty then
 	  tail := tail + 1;

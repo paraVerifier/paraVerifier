@@ -22,6 +22,7 @@ let types = [
 
 let vardefs = List.concat [
   [arrdef [("mem", [paramdef "i0" "depth_type"])] "value_type"];
+  [arrdef [("tmp", [paramdef "i1" "depth_type"])] "value_type"];
   [arrdef [("tail", [])] "depth_type"];
   [arrdef [("empty", [])] "boolean"];
 ]
@@ -57,21 +58,34 @@ let always =
       ]
     ) (
       parallel [
-        forStatement (
-          ifelseStatement (
-            eqn (param (paramref "i")) (const (intc 0))
+        forStatement (parallel [
+          assign (
+            arr [("mem", [paramref "i"])]
           ) (
-            assign (arr [("mem", [paramref "i"])]) (param (paramref "dataIn"))
-          ) (
-            forStatement (
-              ifStatement (
-                eqn (param (paramref "j")) (uif "-" [param (paramref "i"); (const (intc 1))])
+            ite (
+              eqn (param (paramref "i")) (const (intc 0))
+            ) (
+              param (paramref "dataIn")
+            ) (
+              read (
+                arrdef [("mem", [paramdef "i1" "depth_type"])] "depth_type"
               ) (
-                assign (arr [("mem", [paramref "i"])]) (var (arr [("mem", [paramref "j"])]))
-              )
-            ) [paramdef "j" "depth_type"]
-          )
-        ) [paramdef "i" "depth_type"];
+                uif "-" [param (paramref "i"); const (intc 1)]
+              ) types
+            )
+          );
+          ifStatement (
+            uip ">" [param (paramref "i"); const (intc 0)]
+          ) (
+            write (
+              arrdef [("tmp", [paramdef "i0" "depth_type"])] "depth_type"
+            ) (
+              uif "-" [param (paramref "i"); const (intc 1)]
+            ) (
+              var (arr [("mem", [paramref "i"])])
+            ) types
+          );
+        ]) [paramdef "i" "depth_type"];
         ifStatement (
           eqn (var (global "empty")) (const (boolc true))
         ) (
